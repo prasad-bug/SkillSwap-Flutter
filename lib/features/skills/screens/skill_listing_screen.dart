@@ -163,7 +163,7 @@ class _SkillListingScreenState extends ConsumerState<SkillListingScreen> {
               expandedHeight: 0,
               toolbarHeight: 0,
               bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(108),
+                preferredSize: const Size.fromHeight(116),
                 child: _SearchAndChipsHeader(
                   controller: _searchCtrl,
                   filter: filter,
