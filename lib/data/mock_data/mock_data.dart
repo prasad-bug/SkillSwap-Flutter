@@ -1,0 +1,707 @@
+import '../models/app_user.dart';
+import '../models/skill.dart';
+import '../models/booking.dart';
+import '../models/chat.dart';
+import '../models/rating.dart';
+
+/// Seeds rich mock data for the in-memory mock repositories.
+class MockData {
+  MockData._();
+
+  // ── Users ─────────────────────────────────────────────────────────────────
+  static final List<AppUser> users = [
+    const AppUser(
+      id: 'u1',
+      name: 'Arjun Mehta',
+      email: 'arjun@demo.com',
+      avatarUrl: 'https://i.pravatar.cc/150?img=11',
+      bio: 'Full-stack dev & guitar enthusiast. Loves teaching Flutter.',
+      location: 'Pune, India',
+      offeredSkillIds: ['s1', 's2'],
+      wantedSkills: ['Spanish', 'Cooking'],
+      avgRating: 4.8,
+      ratingCount: 24,
+    ),
+    const AppUser(
+      id: 'u2',
+      name: 'Priya Sharma',
+      email: 'priya@demo.com',
+      avatarUrl: 'https://i.pravatar.cc/150?img=5',
+      bio: 'Music teacher with 10 years experience. Fluent in 3 languages.',
+      location: 'Mumbai, India',
+      offeredSkillIds: ['s3', 's4'],
+      wantedSkills: ['Python', 'Photography'],
+      avgRating: 4.9,
+      ratingCount: 41,
+    ),
+    const AppUser(
+      id: 'u3',
+      name: 'Rohan Verma',
+      email: 'rohan@demo.com',
+      avatarUrl: 'https://i.pravatar.cc/150?img=8',
+      bio: 'Fitness coach & nutritionist. Certified CrossFit trainer.',
+      location: 'Delhi, India',
+      offeredSkillIds: ['s5', 's6'],
+      wantedSkills: ['Guitar', 'Web Design'],
+      avgRating: 4.7,
+      ratingCount: 18,
+    ),
+    const AppUser(
+      id: 'u4',
+      name: 'Sneha Joshi',
+      email: 'sneha@demo.com',
+      avatarUrl: 'https://i.pravatar.cc/150?img=16',
+      bio: 'Professional chef & food blogger. Specialises in Indian & Italian.',
+      location: 'Bangalore, India',
+      offeredSkillIds: ['s7', 's8'],
+      wantedSkills: ['Yoga', 'Piano'],
+      avgRating: 4.6,
+      ratingCount: 33,
+    ),
+    const AppUser(
+      id: 'u5',
+      name: 'Kavya Patel',
+      email: 'kavya@demo.com',
+      avatarUrl: 'https://i.pravatar.cc/150?img=20',
+      bio: 'UX designer & illustrator. I turn ideas into beautiful products.',
+      location: 'Ahmedabad, India',
+      offeredSkillIds: ['s9', 's10'],
+      wantedSkills: ['Fitness', 'French'],
+      avgRating: 4.5,
+      ratingCount: 15,
+    ),
+    const AppUser(
+      id: 'u6',
+      name: 'Dev Kapoor',
+      email: 'dev@demo.com',
+      avatarUrl: 'https://i.pravatar.cc/150?img=33',
+      bio: 'Startup founder & business strategist. Mentor at TiE.',
+      location: 'Hyderabad, India',
+      offeredSkillIds: ['s11', 's12'],
+      wantedSkills: ['Cooking', 'Drawing'],
+      avgRating: 4.4,
+      ratingCount: 22,
+    ),
+    const AppUser(
+      id: 'u7',
+      name: 'Nisha Gupta',
+      email: 'nisha@demo.com',
+      avatarUrl: 'https://i.pravatar.cc/150?img=25',
+      bio: 'Language trainer. Teaches French, German & Spanish.',
+      location: 'Chennai, India',
+      offeredSkillIds: ['s13', 's14'],
+      wantedSkills: ['Guitar', 'Yoga'],
+      avgRating: 4.7,
+      ratingCount: 30,
+    ),
+    const AppUser(
+      id: 'u8',
+      name: 'Amit Singh',
+      email: 'amit@demo.com',
+      avatarUrl: 'https://i.pravatar.cc/150?img=52',
+      bio: 'Digital artist & comic creator. Loves manga & concept art.',
+      location: 'Kolkata, India',
+      offeredSkillIds: ['s15', 's16'],
+      wantedSkills: ['Music', 'Finance'],
+      avgRating: 4.3,
+      ratingCount: 12,
+    ),
+    const AppUser(
+      id: 'u9',
+      name: 'Meera Rao',
+      email: 'meera@demo.com',
+      avatarUrl: 'https://i.pravatar.cc/150?img=44',
+      bio: 'Data scientist & ML enthusiast. Python & TensorFlow expert.',
+      location: 'Pune, India',
+      offeredSkillIds: ['s17', 's18'],
+      wantedSkills: ['Cooking', 'Art'],
+      avgRating: 4.8,
+      ratingCount: 28,
+    ),
+    const AppUser(
+      id: 'u10',
+      name: 'Rahul Nair',
+      email: 'rahul@demo.com',
+      avatarUrl: 'https://i.pravatar.cc/150?img=60',
+      bio: 'Yoga teacher & meditation practitioner. 200hr certified.',
+      location: 'Kochi, India',
+      offeredSkillIds: ['s19', 's20'],
+      wantedSkills: ['Python', 'Business'],
+      avgRating: 4.9,
+      ratingCount: 55,
+    ),
+    // Logged-in demo user
+    const AppUser(
+      id: 'current_user',
+      name: 'Demo User',
+      email: 'demo@skillswap.com',
+      avatarUrl: null,
+      bio: 'Eager learner. Love exploring new skills!',
+      location: 'Pune, India',
+      offeredSkillIds: [],
+      wantedSkills: ['Flutter', 'Yoga', 'Cooking'],
+      avgRating: 0.0,
+      ratingCount: 0,
+    ),
+  ];
+
+  // ── Skills ────────────────────────────────────────────────────────────────
+  static final List<Skill> skills = [
+    const Skill(
+      id: 's1',
+      ownerId: 'u1',
+      title: 'Flutter App Development',
+      description:
+          'Learn to build beautiful, production-ready Flutter apps from scratch. We cover widgets, state management with Riverpod, navigation with GoRouter, and Firebase integration. You\'ll build a real project by the end.',
+      category: SkillCategory.technology,
+      level: SkillLevel.intermediate,
+      availability: AvailabilityStatus.available,
+      tags: ['Flutter', 'Dart', 'Mobile', 'Firebase'],
+      avgRating: 4.9,
+      ratingCount: 20,
+      sessionDurationMins: 90,
+    ),
+    const Skill(
+      id: 's2',
+      ownerId: 'u1',
+      title: 'Guitar for Beginners',
+      description:
+          'Learn basic chords, strumming patterns and your first songs on acoustic guitar. Sessions are fun and tailored to your music taste.',
+      category: SkillCategory.music,
+      level: SkillLevel.beginner,
+      availability: AvailabilityStatus.available,
+      tags: ['Guitar', 'Acoustic', 'Chords', 'Music'],
+      avgRating: 4.7,
+      ratingCount: 8,
+      sessionDurationMins: 60,
+    ),
+    const Skill(
+      id: 's3',
+      ownerId: 'u2',
+      title: 'Classical Piano Lessons',
+      description:
+          'Professional classical piano lessons covering theory, technique and performance. From Czerny to Chopin. Suitable for all levels.',
+      category: SkillCategory.music,
+      level: SkillLevel.expert,
+      availability: AvailabilityStatus.limited,
+      tags: ['Piano', 'Classical', 'Music Theory', 'Performance'],
+      avgRating: 5.0,
+      ratingCount: 35,
+      sessionDurationMins: 60,
+    ),
+    const Skill(
+      id: 's4',
+      ownerId: 'u2',
+      title: 'Conversational Spanish',
+      description:
+          'Improve your Spanish speaking and listening skills with a native-level speaker. Focus on real-world conversations, idioms and culture.',
+      category: SkillCategory.language,
+      level: SkillLevel.intermediate,
+      availability: AvailabilityStatus.available,
+      tags: ['Spanish', 'Language', 'Conversation', 'Culture'],
+      avgRating: 4.8,
+      ratingCount: 18,
+      sessionDurationMins: 60,
+    ),
+    const Skill(
+      id: 's5',
+      ownerId: 'u3',
+      title: 'CrossFit & Strength Training',
+      description:
+          'Build functional strength and endurance with certified CrossFit coaching. Custom programming for your goals — fat loss, muscle gain or athletic performance.',
+      category: SkillCategory.fitness,
+      level: SkillLevel.intermediate,
+      availability: AvailabilityStatus.available,
+      tags: ['CrossFit', 'Strength', 'Endurance', 'HIIT'],
+      avgRating: 4.6,
+      ratingCount: 14,
+      sessionDurationMins: 60,
+    ),
+    const Skill(
+      id: 's6',
+      ownerId: 'u3',
+      title: 'Nutrition & Meal Planning',
+      description:
+          'Learn how to eat right for your body type and fitness goals. Macro counting, meal prep, supplement guidance and habit building included.',
+      category: SkillCategory.fitness,
+      level: SkillLevel.beginner,
+      availability: AvailabilityStatus.available,
+      tags: ['Nutrition', 'Meal Prep', 'Fitness', 'Health'],
+      avgRating: 4.5,
+      ratingCount: 9,
+      sessionDurationMins: 45,
+    ),
+    const Skill(
+      id: 's7',
+      ownerId: 'u4',
+      title: 'Indian Street Food Cooking',
+      description:
+          'Master the art of Indian street food — pav bhaji, pani puri, chole, dosas and more. Secrets from a professional chef shared in a warm, friendly session.',
+      category: SkillCategory.cooking,
+      level: SkillLevel.beginner,
+      availability: AvailabilityStatus.available,
+      tags: ['Indian Food', 'Street Food', 'Cooking', 'Vegetarian'],
+      avgRating: 4.9,
+      ratingCount: 28,
+      sessionDurationMins: 90,
+    ),
+    const Skill(
+      id: 's8',
+      ownerId: 'u4',
+      title: 'Italian Pasta & Pizza from Scratch',
+      description:
+          'Make authentic Italian pasta, pizza dough and sauces from scratch. No store-bought shortcuts. We cook together live and you eat at the end!',
+      category: SkillCategory.cooking,
+      level: SkillLevel.beginner,
+      availability: AvailabilityStatus.limited,
+      tags: ['Italian', 'Pasta', 'Pizza', 'Baking'],
+      avgRating: 4.7,
+      ratingCount: 11,
+      sessionDurationMins: 120,
+    ),
+    const Skill(
+      id: 's9',
+      ownerId: 'u5',
+      title: 'UI/UX Design with Figma',
+      description:
+          'Design beautiful user interfaces using Figma. Learn design principles, component libraries, prototyping and user research. Portfolio-ready projects guaranteed.',
+      category: SkillCategory.technology,
+      level: SkillLevel.intermediate,
+      availability: AvailabilityStatus.available,
+      tags: ['Figma', 'UX', 'UI', 'Design', 'Prototyping'],
+      avgRating: 4.6,
+      ratingCount: 13,
+      sessionDurationMins: 90,
+    ),
+    const Skill(
+      id: 's10',
+      ownerId: 'u5',
+      title: 'Digital Illustration',
+      description:
+          'Learn digital illustration with Procreate and Adobe Illustrator. From basic shapes to complex scenes — for hobbyists and aspiring professionals.',
+      category: SkillCategory.art,
+      level: SkillLevel.beginner,
+      availability: AvailabilityStatus.available,
+      tags: ['Procreate', 'Illustration', 'Digital Art', 'Drawing'],
+      avgRating: 4.4,
+      ratingCount: 7,
+      sessionDurationMins: 60,
+    ),
+    const Skill(
+      id: 's11',
+      ownerId: 'u6',
+      title: 'Startup Ideation & Business Model Design',
+      description:
+          'Work through the Business Model Canvas, validate your idea, understand your market and craft a pitch that investors will love.',
+      category: SkillCategory.business,
+      level: SkillLevel.intermediate,
+      availability: AvailabilityStatus.available,
+      tags: ['Startup', 'BMC', 'Entrepreneurship', 'Pitch'],
+      avgRating: 4.5,
+      ratingCount: 19,
+      sessionDurationMins: 60,
+    ),
+    const Skill(
+      id: 's12',
+      ownerId: 'u6',
+      title: 'Personal Finance & Investing',
+      description:
+          'Understand budgeting, SIPs, mutual funds, equity investing and goal-based financial planning for young professionals.',
+      category: SkillCategory.business,
+      level: SkillLevel.beginner,
+      availability: AvailabilityStatus.available,
+      tags: ['Finance', 'Investing', 'SIP', 'Budgeting'],
+      avgRating: 4.3,
+      ratingCount: 16,
+      sessionDurationMins: 60,
+    ),
+    const Skill(
+      id: 's13',
+      ownerId: 'u7',
+      title: 'French for Beginners (A1-A2)',
+      description:
+          'Learn the foundations of French — pronunciation, greetings, basic grammar and everyday vocabulary. Taught by a certified DELF examiner.',
+      category: SkillCategory.language,
+      level: SkillLevel.beginner,
+      availability: AvailabilityStatus.available,
+      tags: ['French', 'Language', 'A1', 'Grammar'],
+      avgRating: 4.8,
+      ratingCount: 22,
+      sessionDurationMins: 60,
+    ),
+    const Skill(
+      id: 's14',
+      ownerId: 'u7',
+      title: 'German Conversation Practice',
+      description:
+          'Intensive German speaking practice. Perfect your pronunciation, work on complex grammar and discuss current events in German.',
+      category: SkillCategory.language,
+      level: SkillLevel.intermediate,
+      availability: AvailabilityStatus.limited,
+      tags: ['German', 'Language', 'Conversation', 'B1'],
+      avgRating: 4.6,
+      ratingCount: 10,
+      sessionDurationMins: 60,
+    ),
+    const Skill(
+      id: 's15',
+      ownerId: 'u8',
+      title: 'Manga & Comic Art',
+      description:
+          'Learn to draw manga-style characters, panels and storytelling. From proportions and expressions to inking and colouring digitally.',
+      category: SkillCategory.art,
+      level: SkillLevel.beginner,
+      availability: AvailabilityStatus.available,
+      tags: ['Manga', 'Comics', 'Drawing', 'Character Design'],
+      avgRating: 4.4,
+      ratingCount: 8,
+      sessionDurationMins: 75,
+    ),
+    const Skill(
+      id: 's16',
+      ownerId: 'u8',
+      title: 'Concept Art for Game Design',
+      description:
+          'Learn environment design, character concept art and asset creation workflows used by AAA game studios.',
+      category: SkillCategory.art,
+      level: SkillLevel.intermediate,
+      availability: AvailabilityStatus.unavailable,
+      tags: ['Concept Art', 'Game Design', 'Environment Art'],
+      avgRating: 4.2,
+      ratingCount: 5,
+      sessionDurationMins: 90,
+    ),
+    const Skill(
+      id: 's17',
+      ownerId: 'u9',
+      title: 'Python for Data Science',
+      description:
+          'From zero to data science hero. Learn Python, pandas, NumPy, matplotlib and scikit-learn through hands-on projects.',
+      category: SkillCategory.technology,
+      level: SkillLevel.beginner,
+      availability: AvailabilityStatus.available,
+      tags: ['Python', 'Data Science', 'Pandas', 'ML'],
+      avgRating: 4.9,
+      ratingCount: 27,
+      sessionDurationMins: 90,
+    ),
+    const Skill(
+      id: 's18',
+      ownerId: 'u9',
+      title: 'Machine Learning Fundamentals',
+      description:
+          'Understand ML algorithms (regression, classification, clustering), model evaluation and deployment. Project-based learning.',
+      category: SkillCategory.technology,
+      level: SkillLevel.intermediate,
+      availability: AvailabilityStatus.available,
+      tags: ['ML', 'AI', 'Python', 'TensorFlow'],
+      avgRating: 4.7,
+      ratingCount: 14,
+      sessionDurationMins: 90,
+    ),
+    const Skill(
+      id: 's19',
+      ownerId: 'u10',
+      title: 'Hatha Yoga (All Levels)',
+      description:
+          'Traditional Hatha Yoga sessions covering asanas, pranayama and meditation. Suitable for complete beginners to experienced practitioners.',
+      category: SkillCategory.fitness,
+      level: SkillLevel.beginner,
+      availability: AvailabilityStatus.available,
+      tags: ['Yoga', 'Hatha', 'Meditation', 'Wellness'],
+      avgRating: 4.9,
+      ratingCount: 50,
+      sessionDurationMins: 60,
+    ),
+    const Skill(
+      id: 's20',
+      ownerId: 'u10',
+      title: 'Guided Meditation & Mindfulness',
+      description:
+          'Reduce stress, improve focus and sleep better with evidence-based mindfulness practices. MBSR protocol adapted for busy professionals.',
+      category: SkillCategory.fitness,
+      level: SkillLevel.beginner,
+      availability: AvailabilityStatus.available,
+      tags: ['Meditation', 'Mindfulness', 'MBSR', 'Stress Relief'],
+      avgRating: 4.8,
+      ratingCount: 32,
+      sessionDurationMins: 45,
+    ),
+  ];
+
+  // ── Chat Threads ──────────────────────────────────────────────────────────
+  static final List<ChatThread> threads = [
+    ChatThread(
+      id: 't1',
+      participantIds: const ['current_user', 'u1'],
+      lastMessage: 'That sounds great! Looking forward to it.',
+      lastMessageAt: DateTime.now().subtract(const Duration(minutes: 15)),
+      unreadCount: 2,
+    ),
+    ChatThread(
+      id: 't2',
+      participantIds: const ['current_user', 'u2'],
+      lastMessage: 'Can we do Saturday morning?',
+      lastMessageAt: DateTime.now().subtract(const Duration(hours: 2)),
+      unreadCount: 0,
+    ),
+    ChatThread(
+      id: 't3',
+      participantIds: const ['current_user', 'u9'],
+      lastMessage: 'I\'ll share the Python notebook before our session.',
+      lastMessageAt: DateTime.now().subtract(const Duration(days: 1)),
+      unreadCount: 1,
+    ),
+  ];
+
+  // ── Chat Messages ─────────────────────────────────────────────────────────
+  static final Map<String, List<ChatMessage>> messages = {
+    't1': [
+      ChatMessage(
+        id: 'm1',
+        senderId: 'u1',
+        text: 'Hey! I saw you\'re interested in Flutter. I\'d love to teach you!',
+        timestamp: DateTime.now().subtract(const Duration(hours: 1)),
+        status: MessageStatus.read,
+      ),
+      ChatMessage(
+        id: 'm2',
+        senderId: 'current_user',
+        text: 'Hi Arjun! Yes, I\'m really excited to learn Flutter development.',
+        timestamp:
+            DateTime.now().subtract(const Duration(minutes: 50)),
+        status: MessageStatus.read,
+      ),
+      ChatMessage(
+        id: 'm3',
+        senderId: 'u1',
+        text:
+            'Perfect! I can start with the basics — widgets, layout, state management. Do weekends work for you?',
+        timestamp:
+            DateTime.now().subtract(const Duration(minutes: 30)),
+        status: MessageStatus.read,
+      ),
+      ChatMessage(
+        id: 'm4',
+        senderId: 'current_user',
+        text: 'Weekends are perfect for me!',
+        timestamp:
+            DateTime.now().subtract(const Duration(minutes: 20)),
+        status: MessageStatus.delivered,
+      ),
+      ChatMessage(
+        id: 'm5',
+        senderId: 'u1',
+        text: 'That sounds great! Looking forward to it.',
+        timestamp:
+            DateTime.now().subtract(const Duration(minutes: 15)),
+        status: MessageStatus.delivered,
+      ),
+    ],
+    't2': [
+      ChatMessage(
+        id: 'm6',
+        senderId: 'current_user',
+        text: 'Hi Priya! I\'m interested in your piano lessons.',
+        timestamp: DateTime.now().subtract(const Duration(hours: 3)),
+        status: MessageStatus.read,
+      ),
+      ChatMessage(
+        id: 'm7',
+        senderId: 'u2',
+        text:
+            'Hello! I\'d be happy to take you through the basics. What\'s your current level?',
+        timestamp: DateTime.now().subtract(const Duration(hours: 2, minutes: 45)),
+        status: MessageStatus.read,
+      ),
+      ChatMessage(
+        id: 'm8',
+        senderId: 'current_user',
+        text: 'Complete beginner, never played before.',
+        timestamp:
+            DateTime.now().subtract(const Duration(hours: 2, minutes: 30)),
+        status: MessageStatus.read,
+      ),
+      ChatMessage(
+        id: 'm9',
+        senderId: 'u2',
+        text: 'Can we do Saturday morning?',
+        timestamp: DateTime.now().subtract(const Duration(hours: 2)),
+        status: MessageStatus.read,
+      ),
+    ],
+    't3': [
+      ChatMessage(
+        id: 'm10',
+        senderId: 'u9',
+        text: 'Looking forward to our Python session!',
+        timestamp: DateTime.now().subtract(const Duration(days: 1, hours: 2)),
+        status: MessageStatus.read,
+      ),
+      ChatMessage(
+        id: 'm11',
+        senderId: 'current_user',
+        text: 'Me too! What should I prepare?',
+        timestamp: DateTime.now().subtract(const Duration(days: 1, hours: 1)),
+        status: MessageStatus.read,
+      ),
+      ChatMessage(
+        id: 'm12',
+        senderId: 'u9',
+        text: 'I\'ll share the Python notebook before our session.',
+        timestamp: DateTime.now().subtract(const Duration(days: 1)),
+        status: MessageStatus.sent,
+      ),
+    ],
+  };
+
+  // ── Bookings ──────────────────────────────────────────────────────────────
+  static final List<Booking> bookings = [
+    Booking(
+      id: 'b1',
+      skillId: 's1',
+      teacherId: 'u1',
+      learnerId: 'current_user',
+      dateTime: DateTime.now().add(const Duration(days: 3, hours: 10)),
+      durationMins: 90,
+      status: BookingStatus.confirmed,
+      notes: 'Please cover Riverpod and GoRouter.',
+      skillTitle: 'Flutter App Development',
+    ),
+    Booking(
+      id: 'b2',
+      skillId: 's17',
+      teacherId: 'u9',
+      learnerId: 'current_user',
+      dateTime: DateTime.now().add(const Duration(days: 5, hours: 9)),
+      durationMins: 90,
+      status: BookingStatus.confirmed,
+      notes: 'I want to learn pandas and data visualisation.',
+      skillTitle: 'Python for Data Science',
+    ),
+    Booking(
+      id: 'b3',
+      skillId: 's19',
+      teacherId: 'u10',
+      learnerId: 'current_user',
+      dateTime: DateTime.now().subtract(const Duration(days: 7)),
+      durationMins: 60,
+      status: BookingStatus.completed,
+      notes: 'Morning yoga session.',
+      skillTitle: 'Hatha Yoga (All Levels)',
+    ),
+    Booking(
+      id: 'b4',
+      skillId: 's7',
+      teacherId: 'u4',
+      learnerId: 'current_user',
+      dateTime: DateTime.now().subtract(const Duration(days: 14)),
+      durationMins: 90,
+      status: BookingStatus.completed,
+      notes: 'Make pav bhaji and chole.',
+      skillTitle: 'Indian Street Food Cooking',
+    ),
+    Booking(
+      id: 'b5',
+      skillId: 's3',
+      teacherId: 'u2',
+      learnerId: 'current_user',
+      dateTime: DateTime.now().subtract(const Duration(days: 2)),
+      durationMins: 60,
+      status: BookingStatus.cancelled,
+      notes: '',
+      skillTitle: 'Classical Piano Lessons',
+    ),
+  ];
+
+  // ── Ratings ───────────────────────────────────────────────────────────────
+  static final List<Rating> ratings = [
+    Rating(
+      id: 'r1',
+      bookingId: 'b3',
+      fromUserId: 'current_user',
+      toUserId: 'u10',
+      stars: 5,
+      review:
+          'Rahul is an incredible yoga teacher. His patience and clear instructions made even the complex poses accessible. Highly recommended!',
+      createdAt: DateTime.now().subtract(const Duration(days: 6)),
+      skillId: 's19',
+      skillTitle: 'Hatha Yoga (All Levels)',
+      fromUserName: 'Demo User',
+      fromUserAvatarUrl: null,
+    ),
+    Rating(
+      id: 'r2',
+      bookingId: 'b4',
+      fromUserId: 'current_user',
+      toUserId: 'u4',
+      stars: 5,
+      review:
+          'Sneha is a fantastic chef! I learned to make perfect pav bhaji and the session was so much fun. Can\'t wait for the next one!',
+      createdAt: DateTime.now().subtract(const Duration(days: 13)),
+      skillId: 's7',
+      skillTitle: 'Indian Street Food Cooking',
+      fromUserName: 'Demo User',
+      fromUserAvatarUrl: null,
+    ),
+    // Other users rating each other
+    Rating(
+      id: 'r3',
+      bookingId: 'b_other1',
+      fromUserId: 'u3',
+      toUserId: 'u1',
+      stars: 5,
+      review: 'Arjun made Flutter concepts crystal clear. Best teaching style!',
+      createdAt: DateTime.now().subtract(const Duration(days: 10)),
+      skillId: 's1',
+      skillTitle: 'Flutter App Development',
+      fromUserName: 'Rohan Verma',
+      fromUserAvatarUrl: 'https://i.pravatar.cc/150?img=8',
+    ),
+    Rating(
+      id: 'r4',
+      bookingId: 'b_other2',
+      fromUserId: 'u5',
+      toUserId: 'u2',
+      stars: 5,
+      review:
+          'Priya is the best piano teacher I\'ve ever had. Her patience is incredible.',
+      createdAt: DateTime.now().subtract(const Duration(days: 20)),
+      skillId: 's3',
+      skillTitle: 'Classical Piano Lessons',
+      fromUserName: 'Kavya Patel',
+      fromUserAvatarUrl: 'https://i.pravatar.cc/150?img=20',
+    ),
+    Rating(
+      id: 'r5',
+      bookingId: 'b_other3',
+      fromUserId: 'u6',
+      toUserId: 'u10',
+      stars: 5,
+      review:
+          'Rahul\'s yoga sessions have completely transformed my mornings. So peaceful and energising.',
+      createdAt: DateTime.now().subtract(const Duration(days: 5)),
+      skillId: 's19',
+      skillTitle: 'Hatha Yoga (All Levels)',
+      fromUserName: 'Dev Kapoor',
+      fromUserAvatarUrl: 'https://i.pravatar.cc/150?img=33',
+    ),
+  ];
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  static AppUser? getUserById(String id) {
+    try {
+      return users.firstWhere((u) => u.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Skill? getSkillById(String id) {
+    try {
+      return skills.firstWhere((s) => s.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+}
