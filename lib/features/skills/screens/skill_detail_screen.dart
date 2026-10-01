@@ -104,11 +104,15 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // 3. Tabs Card
+                    // 3. Skill Barter Matrix
+                    _BarterMatrixCard(skill: skill),
+                    const SizedBox(height: 16),
+
+                    // 4. Tabs Card
                     _TabsCard(skill: skill),
                     const SizedBox(height: 16),
 
-                    // 4. Ratings & Reviews Card
+                    // 5. Ratings & Reviews Card
                     _RatingsReviewsCard(skill: skill),
                   ],
                 ),
@@ -521,6 +525,178 @@ class _PulsingAvailabilityBadgeState extends State<_PulsingAvailabilityBadge>
               color: color,
               fontWeight: FontWeight.w700,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NEW: Skill Barter Matrix Card
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _BarterMatrixCard extends StatelessWidget {
+  const _BarterMatrixCard({required this.skill});
+  final Skill skill;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    // Derive "you learn" from the skill title (first 4 words max)
+    final words = skill.title.split(' ');
+    final youLearn = words.length > 4
+        ? '${words.take(4).join(' ')}…'
+        : skill.title;
+
+    // "You teach" comes from the owner's wantedSkills (passed via skill's context)
+    // We use a fallback label that reads naturally
+    final youTeachItems = skill.tags.isNotEmpty
+        ? skill.tags.take(2).join(' or ')
+        : 'Your matching skill';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'The Skill Barter Matrix',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: cs.onSurface,
+                ),
+              ),
+              Text(
+                'Zero Currency Needed',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: cs.secondary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Two-column grid
+          Row(
+            children: [
+              // "You Learn" column
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: cs.primaryFixed.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.school_rounded,
+                            size: 18,
+                            color: cs.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'YOU LEARN',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: cs.primary,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        youLearn,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: cs.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${skill.sessionDurationMins}-min live pairing & critique',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+
+              // "You Teach" column
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: cs.secondaryContainer.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.swap_horiz_rounded,
+                            size: 18,
+                            color: cs.secondary,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'YOU TEACH',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: cs.secondary,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        youTeachItems,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: cs.onSurface,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Matched on your profile skills',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -1308,12 +1484,41 @@ class _ReviewItemCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      rating.fromUserName,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: cs.onSurface,
-                      ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            rating.fromUserName,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: cs.onSurface,
+                              fontSize: 15,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (rating.swappedSkillTitle != null) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: cs.secondaryContainer.withValues(alpha: 0.4),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Swapped ${rating.swappedSkillTitle}',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: cs.secondary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     Text(
                       _formatRelativeTime(rating.createdAt),

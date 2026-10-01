@@ -14,6 +14,7 @@ class Rating extends Equatable {
     this.skillTitle = '',
     this.fromUserName = '',
     this.fromUserAvatarUrl,
+    this.swappedSkillTitle,
   });
 
   final String id;
@@ -27,6 +28,8 @@ class Rating extends Equatable {
   final String skillTitle;
   final String fromUserName;
   final String? fromUserAvatarUrl;
+  /// The skill the reviewer offered in the barter swap (shown as "Swapped [X]" badge).
+  final String? swappedSkillTitle;
 
   Rating copyWith({
     String? id,
@@ -40,6 +43,7 @@ class Rating extends Equatable {
     String? skillTitle,
     String? fromUserName,
     String? fromUserAvatarUrl,
+    String? swappedSkillTitle,
   }) {
     return Rating(
       id: id ?? this.id,
@@ -53,6 +57,7 @@ class Rating extends Equatable {
       skillTitle: skillTitle ?? this.skillTitle,
       fromUserName: fromUserName ?? this.fromUserName,
       fromUserAvatarUrl: fromUserAvatarUrl ?? this.fromUserAvatarUrl,
+      swappedSkillTitle: swappedSkillTitle ?? this.swappedSkillTitle,
     );
   }
 
@@ -69,6 +74,7 @@ class Rating extends Equatable {
       'skillTitle': skillTitle,
       'fromUserName': fromUserName,
       'fromUserAvatarUrl': fromUserAvatarUrl,
+      'swappedSkillTitle': swappedSkillTitle,
     };
   }
 
@@ -86,6 +92,7 @@ class Rating extends Equatable {
       skillTitle: (map['skillTitle'] as String?) ?? '',
       fromUserName: (map['fromUserName'] as String?) ?? '',
       fromUserAvatarUrl: map['fromUserAvatarUrl'] as String?,
+      swappedSkillTitle: map['swappedSkillTitle'] as String?,
     );
   }
 
@@ -102,5 +109,6 @@ class Rating extends Equatable {
         skillTitle,
         fromUserName,
         fromUserAvatarUrl,
+        swappedSkillTitle,
       ];
 }

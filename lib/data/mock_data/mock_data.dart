@@ -652,6 +652,7 @@ class MockData {
       skillTitle: 'Hatha Yoga (All Levels)',
       fromUserName: 'Demo User',
       fromUserAvatarUrl: null,
+      swappedSkillTitle: 'Guitar (Beginner)',
     ),
     Rating(
       id: 'r2',
@@ -680,6 +681,7 @@ class MockData {
       skillTitle: 'Flutter App Development',
       fromUserName: 'Rohan Verma',
       fromUserAvatarUrl: 'https://i.pravatar.cc/150?img=8',
+      swappedSkillTitle: 'Sound Design',
     ),
     Rating(
       id: 'r3_2',
@@ -693,6 +695,7 @@ class MockData {
       skillTitle: 'Flutter App Development',
       fromUserName: 'Kavya Patel',
       fromUserAvatarUrl: 'https://i.pravatar.cc/150?img=20',
+      swappedSkillTitle: 'Japanese N3',
     ),
     Rating(
       id: 'r3_3',
