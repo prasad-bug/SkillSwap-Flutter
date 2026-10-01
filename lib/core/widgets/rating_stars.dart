@@ -27,9 +27,9 @@ class RatingStars extends StatelessWidget {
           RatingBarIndicator(
             rating: rating,
             itemSize: size,
-            itemBuilder: (_, __) => const Icon(
+            itemBuilder: (_, __) => Icon(
               Icons.star_rounded,
-              color: Color(0xFFFBBF24),
+              color: theme.colorScheme.tertiaryContainer,
             ),
           ),
           const SizedBox(width: 4),

@@ -105,6 +105,8 @@ class Skill extends Equatable {
     this.ratingCount = 0,
     this.sessionDurationMins = 60,
     this.imageUrl,
+    this.curriculum = const [],
+    this.prerequisites = const [],
   });
 
   final String id;
@@ -119,6 +121,8 @@ class Skill extends Equatable {
   final int ratingCount;
   final int sessionDurationMins;
   final String? imageUrl;
+  final List<String> curriculum;
+  final List<String> prerequisites;
 
   Skill copyWith({
     String? id,
@@ -133,6 +137,8 @@ class Skill extends Equatable {
     int? ratingCount,
     int? sessionDurationMins,
     String? imageUrl,
+    List<String>? curriculum,
+    List<String>? prerequisites,
   }) {
     return Skill(
       id: id ?? this.id,
@@ -147,6 +153,8 @@ class Skill extends Equatable {
       ratingCount: ratingCount ?? this.ratingCount,
       sessionDurationMins: sessionDurationMins ?? this.sessionDurationMins,
       imageUrl: imageUrl ?? this.imageUrl,
+      curriculum: curriculum ?? this.curriculum,
+      prerequisites: prerequisites ?? this.prerequisites,
     );
   }
 
@@ -164,6 +172,8 @@ class Skill extends Equatable {
       'ratingCount': ratingCount,
       'sessionDurationMins': sessionDurationMins,
       'imageUrl': imageUrl,
+      'curriculum': curriculum,
+      'prerequisites': prerequisites,
     };
   }
 
@@ -181,6 +191,8 @@ class Skill extends Equatable {
       ratingCount: (map['ratingCount'] as int?) ?? 0,
       sessionDurationMins: (map['sessionDurationMins'] as int?) ?? 60,
       imageUrl: map['imageUrl'] as String?,
+      curriculum: List<String>.from(map['curriculum'] ?? []),
+      prerequisites: List<String>.from(map['prerequisites'] ?? []),
     );
   }
 
@@ -198,5 +210,7 @@ class Skill extends Equatable {
         ratingCount,
         sessionDurationMins,
         imageUrl,
+        curriculum,
+        prerequisites,
       ];
 }

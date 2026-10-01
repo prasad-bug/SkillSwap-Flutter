@@ -18,12 +18,12 @@ class AvailabilityBadge extends StatelessWidget {
     final theme = Theme.of(context);
     final (color, label, icon) = switch (status) {
       AvailabilityStatus.available => (
-          const Color(0xFF22C55E),
+          theme.colorScheme.secondary,
           'Available',
           Icons.circle,
         ),
       AvailabilityStatus.limited => (
-          const Color(0xFFF59E0B),
+          theme.colorScheme.tertiary,
           'Limited',
           Icons.circle,
         ),

@@ -19,8 +19,10 @@ class DashboardScreen extends ConsumerWidget {
     final userAsync = ref.watch(currentUserProvider);
     final user = userAsync.asData?.value;
 
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F7FF),
+      backgroundColor: cs.surface,
       body: CustomScrollView(
         slivers: [
           _DashboardAppBar(user: user),
@@ -55,7 +57,7 @@ class _DashboardAppBar extends ConsumerWidget {
 
     return SliverAppBar(
       pinned: true,
-      backgroundColor: const Color(0xFFF8F7FF),
+      backgroundColor: cs.surface,
       surfaceTintColor: Colors.transparent,
       title: Row(
         children: [
@@ -341,13 +343,19 @@ class _BookingTile extends StatelessWidget {
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: booking.status == BookingStatus.confirmed ? Colors.teal.withValues(alpha: 0.2) : cs.secondaryContainer,
+            color: booking.status == BookingStatus.confirmed
+                ? cs.secondaryContainer.withValues(alpha: 0.4)
+                : cs.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(100),
           ),
           child: Text(
             booking.status.label,
-            style: theme.textTheme.labelSmall
-                ?.copyWith(color: booking.status == BookingStatus.confirmed ? Colors.teal[700] : cs.onSecondaryContainer),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: booking.status == BookingStatus.confirmed
+                  ? cs.onSecondaryContainer
+                  : cs.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         onTap: () => context.go('/bookings'),
@@ -522,7 +530,7 @@ class _OfferSkillBanner extends StatelessWidget {
         padding: const EdgeInsets.all(AppConstants.spaceLG),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [cs.primary, const Color(0xFF7B61FF)], // Using standard primary & slightly lighter for gradient
+            colors: [cs.primary, cs.primaryContainer],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
