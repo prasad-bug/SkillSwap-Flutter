@@ -76,6 +76,9 @@ abstract class SkillRepository {
   /// Create or update a skill.
   Future<Skill> saveSkill(Skill skill);
 
+  /// Delete a skill by id.
+  Future<void> deleteSkill(String skillId);
+
   /// Get popular skills (top N by rating).
   Future<List<Skill>> getPopularSkills({int limit = 10});
 

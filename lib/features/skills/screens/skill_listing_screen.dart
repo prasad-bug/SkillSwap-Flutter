@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../../core/utils/image_utils.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/theme/category_theme_extension.dart';
 import '../../../data/models/skill.dart';
@@ -123,7 +123,7 @@ class _SkillListingScreenState extends ConsumerState<SkillListingScreen> {
               IconButton(
                 icon: Icon(Icons.notifications_outlined,
                     color: cs.onSurfaceVariant),
-                onPressed: () {},
+                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Coming soon!'))),
               ),
               GestureDetector(
                 onTap: () => context.push('/profile'),
@@ -132,10 +132,8 @@ class _SkillListingScreenState extends ConsumerState<SkillListingScreen> {
                   child: CircleAvatar(
                     radius: 16,
                     backgroundColor: cs.primaryContainer,
-                    backgroundImage: currentUser?.avatarUrl != null
-                        ? CachedNetworkImageProvider(currentUser!.avatarUrl!)
-                        : null,
-                    child: currentUser?.avatarUrl == null
+                    backgroundImage: safeNetworkImageProvider(currentUser?.avatarUrl),
+                    child: safeNetworkImageProvider(currentUser?.avatarUrl) == null
                         ? Text(
                             currentUser?.initials ?? '?',
                             style: TextStyle(
@@ -552,10 +550,8 @@ class _ExploreSkillCard extends ConsumerWidget {
                             CircleAvatar(
                               radius: 22,
                               backgroundColor: cs.primaryContainer,
-                              backgroundImage: owner?.avatarUrl != null
-                                  ? CachedNetworkImageProvider(owner!.avatarUrl!)
-                                  : null,
-                              child: owner?.avatarUrl == null
+                              backgroundImage: safeNetworkImageProvider(owner?.avatarUrl),
+                              child: safeNetworkImageProvider(owner?.avatarUrl) == null
                                   ? Text(
                                       owner?.initials ?? '?',
                                       style: TextStyle(

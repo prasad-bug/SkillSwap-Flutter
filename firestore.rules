@@ -1,0 +1,90 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Users Collection
+    // - Anyone authenticated can view user profiles
+    // - Only the authenticated user can create or update their own profile document
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isOwner(userId);
+      allow delete: if false; // User accounts are preserved
+    }
+
+    // Skills Collection
+    // - Anyone authenticated can read available skills
+    // - Providers can create, update, or delete their own skills
+    match /skills/{skillId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (request.resource.data.providerId == request.auth.uid || request.resource.data.ownerId == request.auth.uid);
+      allow update, delete: if isAuthenticated() && (resource.data.providerId == request.auth.uid || resource.data.ownerId == request.auth.uid);
+    }
+
+    // Chats Collection
+    // - Only participants can read the conversation thread
+    // - Only participants can create or update the thread
+    match /chats/{chatId} {
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.participants;
+      allow create: if isAuthenticated() && request.auth.uid in request.resource.data.participants;
+      allow update: if isAuthenticated() && request.auth.uid in resource.data.participants;
+      allow delete: if false;
+
+      // Messages Subcollection
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if isAuthenticated() && request.auth.uid == request.resource.data.senderId && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow update, delete: if false; // Messages are immutable
+      }
+    }
+
+    // Bookings Collection
+    // - Only students or providers involved in the session can read or modify it
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated() && (
+        resource.data.studentId == request.auth.uid ||
+        resource.data.learnerId == request.auth.uid ||
+        resource.data.providerId == request.auth.uid ||
+        resource.data.teacherId == request.auth.uid
+      );
+
+      allow create: if isAuthenticated() && (
+        request.resource.data.studentId == request.auth.uid ||
+        request.resource.data.learnerId == request.auth.uid
+      );
+
+      allow update: if isAuthenticated() && (
+        resource.data.studentId == request.auth.uid ||
+        resource.data.learnerId == request.auth.uid ||
+        resource.data.providerId == request.auth.uid ||
+        resource.data.teacherId == request.auth.uid
+      );
+
+      allow delete: if false;
+    }
+
+    // Ratings Collection
+    // - All authenticated users can read ratings to build peer trust
+    // - Authenticated users can create ratings where they are the author (userId / fromUserId)
+    // - Existing ratings cannot be modified or deleted by unauthorized parties
+    match /ratings/{ratingId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.fromUserId == request.auth.uid
+      );
+      allow update, delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.fromUserId == request.auth.uid
+      );
+    }
+  }
+}

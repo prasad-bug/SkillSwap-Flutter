@@ -88,18 +88,54 @@ class Booking extends Equatable {
     };
   }
 
+  Map<String, dynamic> toFirestore() {
+    return {
+      'id': id,
+      'skillId': skillId,
+      'skillTitle': skillTitle,
+      'studentId': learnerId,
+      'learnerId': learnerId,
+      'providerId': teacherId,
+      'teacherId': teacherId,
+      'dateTime': dateTime.millisecondsSinceEpoch,
+      'date': dateTime.toIso8601String().split('T').first,
+      'time': '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}',
+      'duration': durationMins,
+      'durationMins': durationMins,
+      'status': status.name,
+      'notes': notes,
+      'createdAt': DateTime.now().toIso8601String(),
+      'updatedAt': DateTime.now().toIso8601String(),
+    };
+  }
+
   factory Booking.fromMap(Map<String, dynamic> map) {
+    DateTime dt;
+    final rawDt = map['dateTime'];
+    if (rawDt is int) {
+      dt = DateTime.fromMillisecondsSinceEpoch(rawDt);
+    } else {
+      dt = DateTime.now();
+    }
+
     return Booking(
-      id: map['id'] as String,
-      skillId: map['skillId'] as String,
-      teacherId: map['teacherId'] as String,
-      learnerId: map['learnerId'] as String,
-      dateTime: DateTime.fromMillisecondsSinceEpoch(map['dateTime'] as int),
-      durationMins: (map['durationMins'] as int?) ?? 60,
+      id: (map['id'] ?? '') as String,
+      skillId: (map['skillId'] ?? '') as String,
+      teacherId: (map['teacherId'] ?? map['providerId'] ?? '') as String,
+      learnerId: (map['learnerId'] ?? map['studentId'] ?? '') as String,
+      dateTime: dt,
+      durationMins: (map['durationMins'] ?? map['duration'] as num?)?.toInt() ?? 60,
       status: BookingStatus.fromString((map['status'] as String?) ?? 'pending'),
       notes: (map['notes'] as String?) ?? '',
       skillTitle: (map['skillTitle'] as String?) ?? '',
     );
+  }
+
+  factory Booking.fromFirestore(Map<String, dynamic> data, String docId) {
+    return Booking.fromMap({
+      'id': docId,
+      ...data,
+    });
   }
 
   DateTime get endTime =>

@@ -17,6 +17,7 @@ class ChatMessage extends Equatable {
   const ChatMessage({
     required this.id,
     required this.senderId,
+    this.receiverId = '',
     required this.text,
     required this.timestamp,
     this.status = MessageStatus.sent,
@@ -24,6 +25,7 @@ class ChatMessage extends Equatable {
 
   final String id;
   final String senderId;
+  final String receiverId;
   final String text;
   final DateTime timestamp;
   final MessageStatus status;
@@ -31,6 +33,7 @@ class ChatMessage extends Equatable {
   ChatMessage copyWith({
     String? id,
     String? senderId,
+    String? receiverId,
     String? text,
     DateTime? timestamp,
     MessageStatus? status,
@@ -38,6 +41,7 @@ class ChatMessage extends Equatable {
     return ChatMessage(
       id: id ?? this.id,
       senderId: senderId ?? this.senderId,
+      receiverId: receiverId ?? this.receiverId,
       text: text ?? this.text,
       timestamp: timestamp ?? this.timestamp,
       status: status ?? this.status,
@@ -48,6 +52,18 @@ class ChatMessage extends Equatable {
     return {
       'id': id,
       'senderId': senderId,
+      'receiverId': receiverId,
+      'text': text,
+      'timestamp': timestamp.millisecondsSinceEpoch,
+      'status': status.name,
+    };
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'senderId': senderId,
+      'receiverId': receiverId,
+      'message': text,
       'text': text,
       'timestamp': timestamp.millisecondsSinceEpoch,
       'status': status.name,
@@ -55,13 +71,31 @@ class ChatMessage extends Equatable {
   }
 
   factory ChatMessage.fromMap(Map<String, dynamic> map) {
+    DateTime ts;
+    final rawTs = map['timestamp'];
+    if (rawTs is int) {
+      ts = DateTime.fromMillisecondsSinceEpoch(rawTs);
+    } else if (rawTs != null && rawTs.toString().contains('Timestamp')) {
+      ts = DateTime.now();
+    } else {
+      ts = DateTime.now();
+    }
+
     return ChatMessage(
-      id: map['id'] as String,
-      senderId: map['senderId'] as String,
-      text: map['text'] as String,
-      timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
+      id: (map['id'] ?? '') as String,
+      senderId: (map['senderId'] ?? '') as String,
+      receiverId: (map['receiverId'] ?? '') as String,
+      text: (map['message'] ?? map['text'] ?? '') as String,
+      timestamp: ts,
       status: MessageStatus.fromString((map['status'] as String?) ?? 'sent'),
     );
+  }
+
+  factory ChatMessage.fromFirestore(Map<String, dynamic> data, String docId) {
+    return ChatMessage.fromMap({
+      'id': docId,
+      ...data,
+    });
   }
 
   @override
@@ -110,16 +144,38 @@ class ChatThread extends Equatable {
     };
   }
 
+  Map<String, dynamic> toFirestore() {
+    return {
+      'participants': participantIds,
+      'participantIds': participantIds,
+      'lastMessage': lastMessage,
+      'lastMessageTime': lastMessageAt?.millisecondsSinceEpoch,
+      'unreadCount': unreadCount,
+      'createdAt': DateTime.now().toIso8601String(),
+    };
+  }
+
   factory ChatThread.fromMap(Map<String, dynamic> map) {
+    DateTime? lastMsg;
+    final rawTime = map['lastMessageAt'] ?? map['lastMessageTime'];
+    if (rawTime is int) {
+      lastMsg = DateTime.fromMillisecondsSinceEpoch(rawTime);
+    }
+
     return ChatThread(
-      id: map['id'] as String,
-      participantIds: List<String>.from(map['participantIds'] ?? []),
+      id: (map['id'] ?? '') as String,
+      participantIds: List<String>.from(map['participantIds'] ?? map['participants'] ?? []),
       lastMessage: (map['lastMessage'] as String?) ?? '',
-      lastMessageAt: map['lastMessageAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['lastMessageAt'] as int)
-          : null,
+      lastMessageAt: lastMsg,
       unreadCount: (map['unreadCount'] as int?) ?? 0,
     );
+  }
+
+  factory ChatThread.fromFirestore(Map<String, dynamic> data, String docId) {
+    return ChatThread.fromMap({
+      'id': docId,
+      ...data,
+    });
   }
 
   String otherParticipantId(String currentUserId) {

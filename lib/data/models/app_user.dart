@@ -67,19 +67,42 @@ class AppUser extends Equatable {
     };
   }
 
+  Map<String, dynamic> toFirestore() {
+    return {
+      'uid': id,
+      'name': name,
+      'email': email,
+      'profileImage': avatarUrl ?? '',
+      'bio': bio,
+      'location': location,
+      'skillsOffered': offeredSkillIds,
+      'skillsLearning': wantedSkills,
+      'rating': avgRating,
+      'totalRatings': ratingCount,
+      'updatedAt': DateTime.now().toIso8601String(),
+    };
+  }
+
   factory AppUser.fromMap(Map<String, dynamic> map) {
     return AppUser(
-      id: map['id'] as String,
-      name: map['name'] as String,
-      email: map['email'] as String,
-      avatarUrl: map['avatarUrl'] as String?,
+      id: (map['id'] ?? map['uid'] ?? '') as String,
+      name: (map['name'] ?? '') as String,
+      email: (map['email'] ?? '') as String,
+      avatarUrl: map['avatarUrl'] as String? ?? map['profileImage'] as String?,
       bio: (map['bio'] as String?) ?? '',
       location: (map['location'] as String?) ?? '',
-      offeredSkillIds: List<String>.from(map['offeredSkillIds'] ?? []),
-      wantedSkills: List<String>.from(map['wantedSkills'] ?? []),
-      avgRating: (map['avgRating'] as num?)?.toDouble() ?? 0.0,
-      ratingCount: (map['ratingCount'] as int?) ?? 0,
+      offeredSkillIds: List<String>.from(map['offeredSkillIds'] ?? map['skillsOffered'] ?? []),
+      wantedSkills: List<String>.from(map['wantedSkills'] ?? map['skillsLearning'] ?? []),
+      avgRating: (map['avgRating'] ?? map['rating'] as num?)?.toDouble() ?? 0.0,
+      ratingCount: (map['ratingCount'] ?? map['totalRatings'] as num?)?.toInt() ?? 0,
     );
+  }
+
+  factory AppUser.fromFirestore(Map<String, dynamic> data, String docId) {
+    return AppUser.fromMap({
+      'id': docId,
+      ...data,
+    });
   }
 
   String get initials {

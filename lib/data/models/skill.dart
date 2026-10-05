@@ -177,23 +177,61 @@ class Skill extends Equatable {
     };
   }
 
+  Map<String, dynamic> toFirestore() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'category': category.label,
+      'level': level.label,
+      'providerId': ownerId,
+      'ownerId': ownerId,
+      'userId': ownerId,
+      'providerName': '',
+      'providerImage': imageUrl ?? '',
+      'rating': avgRating,
+      'totalRatings': ratingCount,
+      'availability': availability.label,
+      'sessionDurationMins': sessionDurationMins,
+      'tags': tags,
+      'curriculum': curriculum,
+      'prerequisites': prerequisites,
+      'updatedAt': DateTime.now().toIso8601String(),
+    };
+  }
+
   factory Skill.fromMap(Map<String, dynamic> map) {
+    AvailabilityStatus avail = AvailabilityStatus.available;
+    final rawAvail = map['availability'];
+    if (rawAvail is String) {
+      avail = AvailabilityStatus.fromString(rawAvail);
+    } else if (rawAvail is List && rawAvail.isNotEmpty) {
+      avail = AvailabilityStatus.fromString(rawAvail.first.toString());
+    }
+
     return Skill(
-      id: map['id'] as String,
-      ownerId: map['ownerId'] as String,
-      title: map['title'] as String,
-      description: map['description'] as String,
-      category: SkillCategory.fromString(map['category'] as String),
-      level: SkillLevel.fromString(map['level'] as String),
-      availability: AvailabilityStatus.fromString(map['availability'] as String),
+      id: (map['id'] ?? '') as String,
+      ownerId: (map['ownerId'] ?? map['providerId'] ?? map['userId'] ?? '') as String,
+      title: (map['title'] ?? '') as String,
+      description: (map['description'] ?? '') as String,
+      category: SkillCategory.fromString((map['category'] ?? 'other') as String),
+      level: SkillLevel.fromString((map['level'] ?? map['experienceLevel'] ?? 'beginner') as String),
+      availability: avail,
       tags: List<String>.from(map['tags'] ?? []),
-      avgRating: (map['avgRating'] as num?)?.toDouble() ?? 0.0,
-      ratingCount: (map['ratingCount'] as int?) ?? 0,
+      avgRating: (map['avgRating'] ?? map['rating'] ?? map['userRating'] as num?)?.toDouble() ?? 0.0,
+      ratingCount: (map['ratingCount'] ?? map['totalRatings'] as num?)?.toInt() ?? 0,
       sessionDurationMins: (map['sessionDurationMins'] as int?) ?? 60,
-      imageUrl: map['imageUrl'] as String?,
+      imageUrl: map['imageUrl'] as String? ?? map['providerImage'] as String? ?? map['userAvatarUrl'] as String?,
       curriculum: List<String>.from(map['curriculum'] ?? []),
       prerequisites: List<String>.from(map['prerequisites'] ?? []),
     );
+  }
+
+  factory Skill.fromFirestore(Map<String, dynamic> data, String docId) {
+    return Skill.fromMap({
+      'id': docId,
+      ...data,
+    });
   }
 
   @override

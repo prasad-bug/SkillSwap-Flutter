@@ -8,6 +8,7 @@ import '../../../core/widgets/skill_card.dart';
 import '../../../core/widgets/skill_card_skeleton.dart';
 import '../../../data/models/app_user.dart';
 import '../../../data/models/booking.dart';
+import '../../../data/mock_data/mock_skill_repository.dart';
 import '../providers/dashboard_providers.dart';
 
 /// Dashboard / Home Screen exactly matching the approved Stitch HTML design.
@@ -131,7 +132,7 @@ class _DashboardAppBar extends ConsumerWidget {
             color: cs.onSurfaceVariant,
             size: 24,
           ),
-          onPressed: () {},
+          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Coming soon!'))),
         ),
         GestureDetector(
           onTap: () => context.go('/profile'),
@@ -146,22 +147,29 @@ class _DashboardAppBar extends ConsumerWidget {
                   width: 2,
                 ),
               ),
-              child: CircleAvatar(
-                radius: 14,
-                backgroundColor: cs.primaryContainer,
-                backgroundImage: user?.avatarUrl != null
-                    ? CachedNetworkImageProvider(user!.avatarUrl!)
-                    : null,
-                child: user?.avatarUrl == null
-                    ? Text(
-                        user?.initials ?? '?',
-                        style: TextStyle(
-                          color: cs.onPrimaryContainer,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11,
-                        ),
-                      )
-                    : null,
+              child: Builder(
+                builder: (context) {
+                  final url = user?.avatarUrl;
+                  final hasValidAvatar = url != null &&
+                      url.trim().isNotEmpty &&
+                      (url.startsWith('http://') || url.startsWith('https://'));
+                  return CircleAvatar(
+                    radius: 14,
+                    backgroundColor: cs.primaryContainer,
+                    backgroundImage:
+                        hasValidAvatar ? CachedNetworkImageProvider(url) : null,
+                    child: !hasValidAvatar
+                        ? Text(
+                            user?.initials ?? '?',
+                            style: TextStyle(
+                              color: cs.onPrimaryContainer,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
+                            ),
+                          )
+                        : null,
+                  );
+                },
               ),
             ),
           ),
@@ -762,18 +770,23 @@ class _PopularSkillsSection extends ConsumerWidget {
         const SizedBox(height: 10),
 
         skillsAsync.when(
-          data: (skills) => SizedBox(
-            height: 250,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none,
-              itemCount: skills.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 14),
-              itemBuilder: (ctx, i) {
-                return SkillCard(skill: skills[i]);
-              },
-            ),
-          ),
+          data: (skills) {
+            final displaySkills = skills.isNotEmpty
+                ? skills
+                : MockSkillRepository.skills.take(6).toList();
+            return SizedBox(
+              height: 250,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                itemCount: displaySkills.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                itemBuilder: (ctx, i) {
+                  return SkillCard(skill: displaySkills[i]);
+                },
+              ),
+            );
+          },
           loading: () => SizedBox(
             height: 250,
             child: ListView.separated(
@@ -786,7 +799,21 @@ class _PopularSkillsSection extends ConsumerWidget {
               ),
             ),
           ),
-          error: (_, __) => const SizedBox.shrink(),
+          error: (err, stack) {
+            final fallbackSkills = MockSkillRepository.skills.take(6).toList();
+            return SizedBox(
+              height: 250,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                itemCount: fallbackSkills.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                itemBuilder: (ctx, i) {
+                  return SkillCard(skill: fallbackSkills[i]);
+                },
+              ),
+            );
+          },
         ),
       ],
     );
@@ -891,22 +918,31 @@ class _RecentChatsSection extends ConsumerWidget {
                                 // Avatar with online dot
                                 Stack(
                                   children: [
-                                    CircleAvatar(
-                                      radius: 20,
-                                      backgroundColor: cs.primaryContainer,
-                                      backgroundImage: other?.avatarUrl != null
-                                          ? CachedNetworkImageProvider(other!.avatarUrl!)
-                                          : null,
-                                      child: other?.avatarUrl == null
-                                          ? Text(
-                                              other?.initials ?? '?',
-                                              style: TextStyle(
-                                                color: cs.onPrimaryContainer,
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 12,
-                                              ),
-                                            )
-                                          : null,
+                                    Builder(
+                                      builder: (context) {
+                                        final url = other?.avatarUrl;
+                                        final hasValidAvatar = url != null &&
+                                            url.trim().isNotEmpty &&
+                                            (url.startsWith('http://') ||
+                                                url.startsWith('https://'));
+                                        return CircleAvatar(
+                                          radius: 20,
+                                          backgroundColor: cs.primaryContainer,
+                                          backgroundImage: hasValidAvatar
+                                              ? CachedNetworkImageProvider(url)
+                                              : null,
+                                          child: !hasValidAvatar
+                                              ? Text(
+                                                  other?.initials ?? '?',
+                                                  style: TextStyle(
+                                                    color: cs.onPrimaryContainer,
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 12,
+                                                  ),
+                                                )
+                                              : null,
+                                        );
+                                      },
                                     ),
                                     if (idx == 0)
                                       Positioned(

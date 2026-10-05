@@ -99,3 +99,12 @@ final teacherCompletedSessionsCountProvider =
     return 14;
   }
 });
+
+// ─── Skills taught by user ────────────────────────────────────────────────────
+
+final userTeachingSkillsProvider =
+    FutureProvider.family<List<Skill>, String>((ref, userId) async {
+  final repo = ref.watch(skillRepositoryProvider);
+  return repo.getSkillsByOwner(userId);
+});
+

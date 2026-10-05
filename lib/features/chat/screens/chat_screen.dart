@@ -13,11 +13,15 @@ class ChatScreen extends ConsumerStatefulWidget {
     required this.threadId,
     required this.otherUserName,
     required this.otherUserId,
+    this.skillId,
+    this.skillTitle,
   });
 
   final String threadId;
   final String otherUserName;
   final String otherUserId;
+  final String? skillId;
+  final String? skillTitle;
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
@@ -28,7 +32,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isSending = false;
   bool _showSmartCard = true;
-  bool _showBottomSheet = false;
 
   @override
   void initState() {
@@ -36,7 +39,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = ref.read(currentUserProvider).value;
       if (user != null) {
-        ref.read(chatRepositoryProvider).markMessagesRead(widget.threadId, user.id);
+        ref
+            .read(chatRepositoryProvider)
+            .markMessagesRead(widget.threadId, user.id);
       }
     });
   }
@@ -88,15 +93,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void _openBookingSheet() {
+    final name = widget.otherUserName.isEmpty ? 'Partner' : widget.otherUserName;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => _BookingBottomSheet(
-        otherUserName: widget.otherUserName.isEmpty ? 'Maya Lin' : widget.otherUserName,
-        onPropose: () {
+        otherUserName: name,
+        onPropose: (format, time) {
           Navigator.pop(ctx);
-          _messageController.text = '📅 Proposed a 45-min SkillSwap session for Friday, Oct 27 at 3:00 PM.';
+          _messageController.text =
+              '📅 Proposed a $format session for $time.';
         },
       ),
     );
@@ -106,10 +113,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final messagesAsync = ref.watch(threadMessagesStreamProvider(widget.threadId));
+    final messagesAsync =
+        ref.watch(threadMessagesStreamProvider(widget.threadId));
     final currentUser = ref.watch(currentUserProvider).value;
-    
-    final displayName = widget.otherUserName.isEmpty ? 'Maya Lin' : widget.otherUserName;
+
+    final displayName =
+        widget.otherUserName.isEmpty ? 'Maya Lin' : widget.otherUserName;
 
     return Scaffold(
       backgroundColor: cs.surface,
@@ -119,15 +128,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         titleSpacing: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, color: cs.onSurface),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/dashboard');
+            }
+          },
         ),
         title: Row(
           children: [
             Container(
               height: 28,
               width: 28,
-              decoration: BoxDecoration(color: cs.primary, borderRadius: BorderRadius.circular(8)),
-              child: Icon(Icons.sync_alt_rounded, color: cs.onPrimary, size: 16),
+              decoration: BoxDecoration(
+                  color: cs.primary, borderRadius: BorderRadius.circular(8)),
+              child:
+                  Icon(Icons.sync_alt_rounded, color: cs.onPrimary, size: 16),
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -143,16 +160,34 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ],
         ),
         actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: FilledButton.tonalIcon(
+              onPressed: () {
+                final targetSkillId = widget.skillId ?? 'skill-1';
+                context.push('/skills/$targetSkillId/book');
+              },
+              icon: const Icon(Icons.calendar_month_rounded, size: 16),
+              label: const Text('Book Session',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+          ),
           IconButton(
             icon: Icon(Icons.more_vert_rounded, color: cs.onSurfaceVariant),
-            onPressed: () {},
+            onPressed: () => ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text('Coming soon!'))),
           ),
           Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.only(right: 12),
             child: CircleAvatar(
               radius: 14,
               backgroundColor: cs.surfaceContainer,
-              backgroundImage: const CachedNetworkImageProvider('https://i.pravatar.cc/150?img=16'),
+              backgroundImage: const CachedNetworkImageProvider(
+                  'https://i.pravatar.cc/150?img=16'),
             ),
           ),
         ],
@@ -170,36 +205,45 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   _SwapMatchBanner(displayName: displayName),
                   const SizedBox(height: 16),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: cs.surfaceContainerHigh.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(100),
                     ),
                     child: Text(
                       'Today, October 24',
-                      style: theme.textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+                      style: theme.textTheme.labelSmall
+                          ?.copyWith(color: cs.onSurfaceVariant),
                     ),
                   ),
                 ],
               ),
             ),
-            
+
             // Messages List
             Expanded(
               child: messagesAsync.when(
                 data: (messages) {
                   return ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     itemCount: messages.length + (_showSmartCard ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == messages.length && _showSmartCard) {
                         return _SmartSuggestionCard(
-                          onDismiss: () => setState(() => _showSmartCard = false),
-                          onBook: _openBookingSheet,
+                          partnerName: displayName,
+                          onDismiss: () =>
+                              setState(() => _showSmartCard = false),
+                          onSendRequest: (selectedDate) {
+                            _messageController.text =
+                                '📅 Sent a swap booking request for $selectedDate';
+                          },
+                          onCustomRequest: _openBookingSheet,
                         );
                       }
-                      
+
                       final msg = messages[index];
                       final isMe = msg.senderId == currentUser?.id;
                       final timeStr = DateFormat.jm().format(msg.timestamp);
@@ -216,15 +260,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 error: (err, stack) => Center(child: Text('Error: $err')),
               ),
             ),
-            
+
             // Quick Chips
             _QuickChipsCarousel(
+              partnerName: displayName,
               onTapChip: (text) {
                 _messageController.text = text;
               },
               onBookTap: _openBookingSheet,
             ),
-            
+
             // Input Field Dock
             _InputDock(
               controller: _messageController,
@@ -249,13 +294,18 @@ class _SubHeaderProfileBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 1))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 4,
+              offset: const Offset(0, 1))
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -266,17 +316,20 @@ class _SubHeaderProfileBar extends StatelessWidget {
                 children: [
                   const CircleAvatar(
                     radius: 24,
-                    backgroundImage: CachedNetworkImageProvider('https://i.pravatar.cc/150?img=5'),
+                    backgroundImage: CachedNetworkImageProvider(
+                        'https://i.pravatar.cc/150?img=5'),
                   ),
                   Positioned(
                     bottom: 0,
                     right: 0,
                     child: Container(
-                      width: 14, height: 14,
+                      width: 14,
+                      height: 14,
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981), // green
                         shape: BoxShape.circle,
-                        border: Border.all(color: cs.surfaceContainerLowest, width: 2),
+                        border: Border.all(
+                            color: cs.surfaceContainerLowest, width: 2),
                       ),
                     ),
                   ),
@@ -290,7 +343,8 @@ class _SubHeaderProfileBar extends StatelessWidget {
                     children: [
                       Text(
                         displayName,
-                        style: theme.textTheme.headlineSmall?.copyWith(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(width: 6),
                       Icon(Icons.verified_rounded, size: 16, color: cs.primary),
@@ -298,9 +352,15 @@ class _SubHeaderProfileBar extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      Container(width: 6, height: 6, decoration: BoxDecoration(color: cs.secondary, shape: BoxShape.circle)),
+                      Container(
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                              color: cs.secondary, shape: BoxShape.circle)),
                       const SizedBox(width: 4),
-                      Text('Usually responds in 15m', style: theme.textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
+                      Text('Usually responds in 15m',
+                          style: theme.textTheme.labelSmall
+                              ?.copyWith(color: cs.onSurfaceVariant)),
                     ],
                   ),
                 ],
@@ -328,8 +388,10 @@ class _CircleBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      width: 40, height: 40,
-      decoration: BoxDecoration(color: cs.surfaceContainerLow, shape: BoxShape.circle),
+      width: 40,
+      height: 40,
+      decoration:
+          BoxDecoration(color: cs.surfaceContainerLow, shape: BoxShape.circle),
       child: Icon(icon, size: 20, color: cs.primary),
     );
   }
@@ -341,25 +403,29 @@ class _CircleBtn extends StatelessWidget {
 class _SwapMatchBanner extends StatelessWidget {
   const _SwapMatchBanner({required this.displayName});
   final String displayName;
-  
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final firstName = displayName.split(' ').first;
-    
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
-          colors: [cs.primaryFixed, cs.secondaryContainer.withValues(alpha: 0.5)],
+          colors: [
+            cs.primaryFixed,
+            cs.secondaryContainer.withValues(alpha: 0.5)
+          ],
         ),
       ),
       child: Row(
         children: [
           Container(
-            width: 40, height: 40,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: cs.surfaceContainerLowest.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(12),
@@ -373,19 +439,28 @@ class _SwapMatchBanner extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text('PERFECT SWAP MATCH', style: theme.textTheme.labelSmall?.copyWith(color: cs.primary, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                    Text('PERFECT SWAP MATCH',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                            color: cs.primary,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5)),
                     const SizedBox(width: 4),
                     const Text('✨', style: TextStyle(fontSize: 12)),
                   ],
                 ),
                 RichText(
                   text: TextSpan(
-                    style: theme.textTheme.bodySmall?.copyWith(color: cs.onSurface),
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: cs.onSurface),
                     children: [
                       TextSpan(text: '$firstName wants '),
-                      const TextSpan(text: 'French 🇫🇷', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const TextSpan(
+                          text: 'French 🇫🇷',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                       const TextSpan(text: ' • Offers '),
-                      const TextSpan(text: 'Figma Systems', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const TextSpan(
+                          text: 'Figma Systems',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -394,8 +469,12 @@ class _SwapMatchBanner extends StatelessWidget {
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: cs.surfaceContainerLowest.withValues(alpha: 0.9), borderRadius: BorderRadius.circular(100)),
-            child: Text('Match 98%', style: theme.textTheme.labelSmall?.copyWith(color: cs.primary, fontWeight: FontWeight.bold)),
+            decoration: BoxDecoration(
+                color: cs.surfaceContainerLowest.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(100)),
+            child: Text('Match 98%',
+                style: theme.textTheme.labelSmall
+                    ?.copyWith(color: cs.primary, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -407,7 +486,8 @@ class _SwapMatchBanner extends StatelessWidget {
 // Chat Message Bubble
 // ─────────────────────────────────────────────────────────────────────────────
 class _ChatMessageBubble extends StatelessWidget {
-  const _ChatMessageBubble({required this.text, required this.time, required this.isMe});
+  const _ChatMessageBubble(
+      {required this.text, required this.time, required this.isMe});
   final String text;
   final String time;
   final bool isMe;
@@ -416,20 +496,25 @@ class _ChatMessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Row(
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isMe) ...[
-            const CircleAvatar(radius: 14, backgroundImage: CachedNetworkImageProvider('https://i.pravatar.cc/150?img=5')),
+            const CircleAvatar(
+                radius: 14,
+                backgroundImage: CachedNetworkImageProvider(
+                    'https://i.pravatar.cc/150?img=5')),
             const SizedBox(width: 8),
           ],
           Flexible(
             child: Column(
-              crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment:
+                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 Container(
                   padding: const EdgeInsets.all(14),
@@ -441,7 +526,12 @@ class _ChatMessageBubble extends StatelessWidget {
                       bottomLeft: Radius.circular(isMe ? 16 : 4),
                       bottomRight: Radius.circular(isMe ? 4 : 16),
                     ),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 1))],
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1))
+                    ],
                   ),
                   child: Text(
                     text,
@@ -451,18 +541,12 @@ class _ChatMessageBubble extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      time,
-                      style: theme.textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant.withValues(alpha: 0.8)),
-                    ),
-                    if (isMe) ...[
-                      const SizedBox(width: 4),
-                      Icon(Icons.done_all_rounded, size: 14, color: cs.primary),
-                    ],
-                  ],
+                Text(
+                  time,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: cs.onSurfaceVariant.withValues(alpha: 0.6),
+                    fontSize: 10,
+                  ),
                 ),
               ],
             ),
@@ -474,25 +558,51 @@ class _ChatMessageBubble extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Smart Suggestion Card
+// Smart Suggestion Card (Interactive Date Selection)
 // ─────────────────────────────────────────────────────────────────────────────
-class _SmartSuggestionCard extends StatelessWidget {
-  const _SmartSuggestionCard({required this.onDismiss, required this.onBook});
+class _SmartSuggestionCard extends StatefulWidget {
+  const _SmartSuggestionCard({
+    required this.onDismiss,
+    required this.onSendRequest,
+    required this.onCustomRequest,
+    this.partnerName = 'Maya',
+  });
+
   final VoidCallback onDismiss;
-  final VoidCallback onBook;
+  final ValueChanged<String> onSendRequest;
+  final VoidCallback onCustomRequest;
+  final String partnerName;
+
+  @override
+  State<_SmartSuggestionCard> createState() => _SmartSuggestionCardState();
+}
+
+class _SmartSuggestionCardState extends State<_SmartSuggestionCard> {
+  int _selectedDateIndex = 0; // 0: Fri Oct 27, 1: Thu Oct 26
+
+  final List<String> _dateOptions = const [
+    'Fri, Oct 27 • 3:00 PM',
+    'Thu, Oct 26 • 4:30 PM',
+  ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16, top: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -504,26 +614,45 @@ class _SmartSuggestionCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 36, height: 36,
-                    decoration: BoxDecoration(color: cs.primaryFixed, borderRadius: BorderRadius.circular(12)),
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: cs.primaryFixed,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     child: Icon(Icons.handshake_rounded, color: cs.primary),
                   ),
                   const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Ready to Lock in a Time?', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                      Text('No currency • 1:1 Skill barter session', style: theme.textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
+                      Text(
+                        'Ready to Lock in a Time?',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'No currency • 1:1 Skill barter session',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
                     ],
                   ),
                 ],
               ),
               GestureDetector(
-                onTap: onDismiss,
+                onTap: widget.onDismiss,
                 child: Container(
-                  width: 32, height: 32,
+                  width: 32,
+                  height: 32,
                   decoration: const BoxDecoration(shape: BoxShape.circle),
-                  child: Icon(Icons.close_rounded, size: 18, color: cs.onSurfaceVariant),
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: cs.onSurfaceVariant,
+                  ),
                 ),
               ),
             ],
@@ -531,19 +660,36 @@ class _SmartSuggestionCard extends StatelessWidget {
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: cs.surfaceContainerLow, borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Row(
               children: [
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: cs.surfaceContainerLowest, borderRadius: BorderRadius.circular(8)),
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('You Offer (25m)', style: theme.textTheme.labelSmall?.copyWith(color: cs.primary, fontWeight: FontWeight.bold)),
+                        Text(
+                          'You Offer (25m)',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: cs.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 2),
-                        Text('Conversational French', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500)),
+                        Text(
+                          'Conversational French',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -552,13 +698,27 @@ class _SmartSuggestionCard extends StatelessWidget {
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: cs.surfaceContainerLowest, borderRadius: BorderRadius.circular(8)),
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Maya Offers (25m)', style: theme.textTheme.labelSmall?.copyWith(color: cs.secondary, fontWeight: FontWeight.bold)),
+                        Text(
+                          '${widget.partnerName} Offers (25m)',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: cs.secondary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 2),
-                        Text('Figma Auto-layout', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500)),
+                        Text(
+                          'Figma Auto-layout',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -568,25 +728,49 @@ class _SmartSuggestionCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  decoration: BoxDecoration(color: cs.primaryFixed, borderRadius: BorderRadius.circular(12)),
-                  alignment: Alignment.center,
-                  child: Text('Fri, Oct 27 • 3:00 PM', style: theme.textTheme.labelMedium?.copyWith(color: cs.onPrimaryFixed, fontWeight: FontWeight.bold)),
+            children: List.generate(_dateOptions.length, (index) {
+              final isSelected = _selectedDateIndex == index;
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: index > 0 ? 4 : 0,
+                    right: index < _dateOptions.length - 1 ? 4 : 0,
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => setState(() => _selectedDateIndex = index),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Ink(
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? cs.primaryFixed
+                              : cs.surfaceContainer,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected ? cs.primary : Colors.transparent,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            _dateOptions[index],
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: isSelected
+                                  ? cs.onPrimaryFixed
+                                  : cs.onSurfaceVariant,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  decoration: BoxDecoration(color: cs.surfaceContainer, borderRadius: BorderRadius.circular(12)),
-                  alignment: Alignment.center,
-                  child: Text('Thu, Oct 26 • 4:30 PM', style: theme.textTheme.labelMedium?.copyWith(color: cs.onSurfaceVariant, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
+              );
+            }),
           ),
           const SizedBox(height: 12),
           Row(
@@ -596,7 +780,7 @@ class _SmartSuggestionCard extends StatelessWidget {
                 child: SizedBox(
                   height: 44,
                   child: FilledButton.icon(
-                    onPressed: onBook,
+                    onPressed: () => widget.onSendRequest(_dateOptions[_selectedDateIndex]),
                     icon: const Icon(Icons.calendar_month_rounded, size: 18),
                     label: const Text('Send Booking Request'),
                   ),
@@ -608,7 +792,7 @@ class _SmartSuggestionCard extends StatelessWidget {
                 child: SizedBox(
                   height: 44,
                   child: FilledButton(
-                    onPressed: onBook,
+                    onPressed: widget.onCustomRequest,
                     style: FilledButton.styleFrom(
                       backgroundColor: cs.surfaceContainer,
                       foregroundColor: cs.onSurface,
@@ -629,14 +813,20 @@ class _SmartSuggestionCard extends StatelessWidget {
 // Quick Chips Carousel
 // ─────────────────────────────────────────────────────────────────────────────
 class _QuickChipsCarousel extends StatelessWidget {
-  const _QuickChipsCarousel({required this.onTapChip, required this.onBookTap});
+  const _QuickChipsCarousel({
+    required this.onTapChip,
+    required this.onBookTap,
+    this.partnerName = 'Maya',
+  });
+
   final ValueChanged<String> onTapChip;
   final VoidCallback onBookTap;
+  final String partnerName;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -645,10 +835,10 @@ class _QuickChipsCarousel extends StatelessWidget {
           _buildChip(
             cs: cs,
             icon: Icons.calendar_month_rounded,
-            label: 'Book session with Maya',
-            bgColor: cs.primaryFixed,
-            textColor: cs.primary,
-            iconColor: cs.primary,
+            label: 'Book session with $partnerName',
+            bgColor: cs.primary,
+            textColor: cs.onPrimary,
+            iconColor: cs.onPrimary,
             onTap: onBookTap,
           ),
           const SizedBox(width: 8),
@@ -656,20 +846,22 @@ class _QuickChipsCarousel extends StatelessWidget {
             cs: cs,
             icon: Icons.schedule_rounded,
             label: 'Suggest Friday 3 PM',
-            bgColor: cs.surfaceContainerLowest,
+            bgColor: cs.surfaceContainerHigh,
             textColor: cs.onSurface,
             iconColor: cs.secondary,
-            onTap: () => onTapChip('Friday at 3:00 PM works great for me! Shall we lock that in?'),
+            onTap: () => onTapChip(
+                'Friday at 3:00 PM works great for me! Shall we lock that in?'),
           ),
           const SizedBox(width: 8),
           _buildChip(
             cs: cs,
             icon: Icons.auto_awesome_rounded,
             label: 'Propose 1:1 Swap',
-            bgColor: cs.surfaceContainerLowest,
+            bgColor: cs.surfaceContainerHigh,
             textColor: cs.onSurface,
             iconColor: cs.tertiary,
-            onTap: () => onTapChip('Let\'s propose a 45-min bilateral swap: 20m French & 25m Figma!'),
+            onTap: () => onTapChip(
+                'Let\'s propose a 45-min bilateral swap: 20m French & 25m Figma!'),
           ),
         ],
       ),
@@ -692,20 +884,34 @@ class _QuickChipsCarousel extends StatelessWidget {
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(100),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 1))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 16, color: iconColor),
             const SizedBox(width: 6),
-            Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textColor)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Input Dock
@@ -724,24 +930,32 @@ class _InputDock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    
+
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2))
+        ],
       ),
       child: Row(
         children: [
           IconButton(
             icon: Icon(Icons.add_circle_rounded, color: cs.onSurfaceVariant),
-            onPressed: () {},
+            onPressed: () => ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text('Coming soon!'))),
           ),
           IconButton(
-            icon: Icon(Icons.sentiment_satisfied_rounded, color: cs.onSurfaceVariant),
-            onPressed: () {},
+            icon: Icon(Icons.sentiment_satisfied_rounded,
+                color: cs.onSurfaceVariant),
+            onPressed: () => ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text('Coming soon!'))),
           ),
           Expanded(
             child: Container(
@@ -760,14 +974,17 @@ class _InputDock extends StatelessWidget {
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        hintStyle: TextStyle(color: cs.onSurfaceVariant.withValues(alpha: 0.7)),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 12),
+                        hintStyle: TextStyle(
+                            color: cs.onSurfaceVariant.withValues(alpha: 0.7)),
                       ),
                     ),
                   ),
                   IconButton(
                     icon: Icon(Icons.mic_rounded, color: cs.onSurfaceVariant),
-                    onPressed: () {},
+                    onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Coming soon!'))),
                   ),
                 ],
               ),
@@ -777,10 +994,17 @@ class _InputDock extends StatelessWidget {
           GestureDetector(
             onTap: isSending ? null : onSend,
             child: Container(
-              width: 48, height: 48,
-              decoration: BoxDecoration(color: cs.primary, borderRadius: BorderRadius.circular(12)),
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                  color: cs.primary, borderRadius: BorderRadius.circular(12)),
               child: isSending
-                  ? const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
+                  ? const Center(
+                      child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2)))
                   : Icon(Icons.send_rounded, color: cs.onPrimary),
             ),
           ),
@@ -791,18 +1015,54 @@ class _InputDock extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Booking Bottom Sheet
+// Booking Bottom Sheet (Interactive)
 // ─────────────────────────────────────────────────────────────────────────────
-class _BookingBottomSheet extends StatelessWidget {
-  const _BookingBottomSheet({required this.otherUserName, required this.onPropose});
+typedef ProposeCallback = void Function(String format, String time);
+
+class _BookingBottomSheet extends StatefulWidget {
+  const _BookingBottomSheet({
+    required this.otherUserName,
+    required this.onPropose,
+  });
+
   final String otherUserName;
-  final VoidCallback onPropose;
+  final ProposeCallback onPropose;
+
+  @override
+  State<_BookingBottomSheet> createState() => _BookingBottomSheetState();
+}
+
+class _BookingBottomSheetState extends State<_BookingBottomSheet> {
+  int _selectedFormat = 0;
+  int _selectedTime = 0;
+
+  final List<Map<String, String>> _formats = const [
+    {
+      'title': 'Split Session',
+      'duration': '45 Mins (20 FR + 25 Figma)',
+    },
+    {
+      'title': 'Deep Dive',
+      'duration': '60 Mins (Equal 30m/30m)',
+    },
+  ];
+
+  final List<Map<String, String>> _times = const [
+    {
+      'title': 'Friday, Oct 27 • 3:00 PM',
+      'subtitle': 'Both available based on calendar link',
+    },
+    {
+      'title': 'Thursday, Oct 26 • 4:30 PM',
+      'subtitle': 'Alternative afternoon window',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
@@ -817,8 +1077,12 @@ class _BookingBottomSheet extends StatelessWidget {
           children: [
             Center(
               child: Container(
-                width: 48, height: 6,
-                decoration: BoxDecoration(color: cs.surfaceContainerHighest, borderRadius: BorderRadius.circular(100)),
+                width: 48,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(100),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -828,16 +1092,30 @@ class _BookingBottomSheet extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      width: 40, height: 40,
-                      decoration: BoxDecoration(color: cs.primaryFixed, borderRadius: BorderRadius.circular(12)),
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: cs.primaryFixed,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: Icon(Icons.calendar_today_rounded, color: cs.primary),
                     ),
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Skill Barter Session', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                        Text('Coordinated live via Google Meet', style: theme.textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
+                        Text(
+                          'Skill Barter Session',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Coordinated live via Google Meet',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -851,20 +1129,35 @@ class _BookingBottomSheet extends StatelessWidget {
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: cs.surfaceContainerLow, borderRadius: BorderRadius.circular(16)),
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Row(
                 children: [
                   const CircleAvatar(
                     radius: 22,
-                    backgroundImage: CachedNetworkImageProvider('https://i.pravatar.cc/150?img=5'),
+                    backgroundImage: CachedNetworkImageProvider(
+                      'https://i.pravatar.cc/150?img=5',
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('$otherUserName • Senior UI Designer', style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)),
-                        Text('Paris time (GMT+2) • 100% Barter rate', style: theme.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                        Text(
+                          '${widget.otherUserName} • Senior UI Designer',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Paris time (GMT+2) • 100% Barter rate',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -872,111 +1165,183 @@ class _BookingBottomSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Text('Select Exchange Format', style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Select Exchange Format',
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 8),
             Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: cs.primaryFixed, borderRadius: BorderRadius.circular(12)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Split Session', style: theme.textTheme.labelMedium?.copyWith(color: cs.onPrimaryFixed, fontWeight: FontWeight.bold)),
-                            Icon(Icons.check_circle_rounded, size: 18, color: cs.onPrimaryFixed),
-                          ],
+              children: List.generate(_formats.length, (index) {
+                final isSelected = _selectedFormat == index;
+                final format = _formats[index];
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: index > 0 ? 4 : 0,
+                      right: index < _formats.length - 1 ? 4 : 0,
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => setState(() => _selectedFormat = index),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Ink(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? cs.primaryFixed
+                                : cs.surfaceContainer,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected
+                                  ? cs.primary
+                                  : Colors.transparent,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    format['title']!,
+                                    style: theme.textTheme.labelMedium?.copyWith(
+                                      color: isSelected
+                                          ? cs.onPrimaryFixed
+                                          : cs.onSurfaceVariant,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Icon(
+                                    isSelected
+                                        ? Icons.check_circle_rounded
+                                        : Icons.circle_outlined,
+                                    size: 18,
+                                    color: isSelected
+                                        ? cs.onPrimaryFixed
+                                        : cs.onSurfaceVariant,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                format['duration']!,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: isSelected
+                                      ? cs.onPrimaryFixed
+                                      : cs.onSurfaceVariant,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 4),
-                        Text('45 Mins (20 FR + 25 Figma)', style: theme.textTheme.bodySmall?.copyWith(color: cs.onPrimaryFixed)),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: cs.surfaceContainer, borderRadius: BorderRadius.circular(12)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Deep Dive', style: theme.textTheme.labelMedium?.copyWith(color: cs.onSurfaceVariant, fontWeight: FontWeight.bold)),
-                            Icon(Icons.circle_outlined, size: 18, color: cs.onSurfaceVariant),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text('60 Mins (Equal 30m/30m)', style: theme.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+                );
+              }),
             ),
             const SizedBox(height: 16),
-            Text('Select Proposed Time', style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: cs.surfaceContainerLow, borderRadius: BorderRadius.circular(12)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.event_available_rounded, color: cs.primary),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Friday, Oct 27 • 3:00 PM', style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)),
-                          Text('Both available based on calendar link', style: theme.textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Radio(value: 1, groupValue: 1, onChanged: (v){}, activeColor: cs.primary),
-                ],
+            Text(
+              'Select Proposed Time',
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: cs.surfaceContainerLow, borderRadius: BorderRadius.circular(12)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.event_rounded, color: cs.onSurfaceVariant),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Thursday, Oct 26 • 4:30 PM', style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)),
-                          Text('Alternative afternoon window', style: theme.textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
-                        ],
+            Column(
+              children: List.generate(_times.length, (index) {
+                final isSelected = _selectedTime == index;
+                final time = _times[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => setState(() => _selectedTime = index),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Ink(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: cs.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected ? cs.primary : Colors.transparent,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  isSelected
+                                      ? Icons.event_available_rounded
+                                      : Icons.event_rounded,
+                                  color: isSelected
+                                      ? cs.primary
+                                      : cs.onSurfaceVariant,
+                                ),
+                                const SizedBox(width: 12),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      time['title']!,
+                                      style: theme.textTheme.labelLarge
+                                          ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: isSelected
+                                            ? cs.primary
+                                            : cs.onSurface,
+                                      ),
+                                    ),
+                                    Text(
+                                      time['subtitle']!,
+                                      style: theme.textTheme.labelSmall
+                                          ?.copyWith(color: cs.onSurfaceVariant),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            Radio<int>(
+                              value: index,
+                              groupValue: _selectedTime,
+                              onChanged: (v) {
+                                if (v != null) {
+                                  setState(() => _selectedTime = v);
+                                }
+                              },
+                              activeColor: cs.primary,
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
+                    ),
                   ),
-                  Radio(value: 2, groupValue: 1, onChanged: (v){}, activeColor: cs.primary),
-                ],
-              ),
+                );
+              }),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               height: 48,
               child: FilledButton.icon(
-                onPressed: onPropose,
+                onPressed: () {
+                  final chosenFormat = _formats[_selectedFormat]['title']!;
+                  final chosenTime = _times[_selectedTime]['title']!;
+                  widget.onPropose(chosenFormat, chosenTime);
+                },
                 icon: const Icon(Icons.check_rounded, size: 20),
-                label: const Text('Propose This Swap to Maya'),
+                label: Text('Propose This Swap to ${widget.otherUserName}'),
               ),
             ),
           ],

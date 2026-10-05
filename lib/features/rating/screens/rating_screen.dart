@@ -66,10 +66,37 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
       await ref.read(ratingRepositoryProvider).submitRating(rating);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Thank you! Your review has been submitted.')),
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => AlertDialog(
+            icon: const Icon(Icons.stars_rounded, color: Colors.amber, size: 56),
+            title: const Text('Rating Submitted!'),
+            content: const Text(
+              'Thank you for sharing your feedback! Your review helps build trust within the SkillSwap peer network.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  context.go('/profile');
+                },
+                child: const Text('View Profile'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/profile');
+                  }
+                },
+                child: const Text('Done'),
+              ),
+            ],
+          ),
         );
-        context.pop();
       }
     } catch (e) {
       if (mounted) {

@@ -71,24 +71,32 @@ class SkillCard extends ConsumerWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(
-                          radius: 20,
-                          backgroundColor: cs.primaryContainer,
-                          backgroundImage: effectiveOwnerAvatarUrl != null
-                              ? CachedNetworkImageProvider(effectiveOwnerAvatarUrl)
-                              : null,
-                          child: effectiveOwnerAvatarUrl == null
-                              ? Text(
-                                  effectiveOwnerName.isNotEmpty
-                                      ? effectiveOwnerName[0].toUpperCase()
-                                      : '?',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    color: cs.onPrimaryContainer,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                )
-                              : null,
+                        Builder(
+                          builder: (context) {
+                            final hasValidAvatar = effectiveOwnerAvatarUrl != null &&
+                                effectiveOwnerAvatarUrl.trim().isNotEmpty &&
+                                (effectiveOwnerAvatarUrl.startsWith('http://') ||
+                                    effectiveOwnerAvatarUrl.startsWith('https://'));
+                            return CircleAvatar(
+                              radius: 20,
+                              backgroundColor: cs.primaryContainer,
+                              backgroundImage: hasValidAvatar
+                                  ? CachedNetworkImageProvider(effectiveOwnerAvatarUrl)
+                                  : null,
+                              child: !hasValidAvatar
+                                  ? Text(
+                                      effectiveOwnerName.isNotEmpty
+                                          ? effectiveOwnerName[0].toUpperCase()
+                                          : '?',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: cs.onPrimaryContainer,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    )
+                                  : null,
+                            );
+                          },
                         ),
                         const SizedBox(width: 10),
                         Expanded(

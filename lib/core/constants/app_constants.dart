@@ -5,8 +5,9 @@ class AppConstants {
   static const String appName = 'SkillSwap';
   static const String appVersion = '1.0.0';
 
-  // Use mock repository (set to false to use Firebase)
-  static const bool useMockRepo = true;
+  // Use mock repository (set to false to use real Firebase backend)
+  static bool useMockRepo = false;
+  static bool isFirebaseAvailable = false;
 
   // Spacing
   static const double spaceXS = 4.0;

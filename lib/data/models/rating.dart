@@ -78,22 +78,56 @@ class Rating extends Equatable {
     };
   }
 
+  Map<String, dynamic> toFirestore() {
+    return {
+      'id': id,
+      'bookingId': bookingId,
+      'userId': fromUserId,
+      'fromUserId': fromUserId,
+      'providerId': toUserId,
+      'toUserId': toUserId,
+      'skillId': skillId,
+      'skillTitle': skillTitle,
+      'rating': stars,
+      'stars': stars,
+      'review': review,
+      'fromUserName': fromUserName,
+      'fromUserAvatarUrl': fromUserAvatarUrl,
+      'swappedSkillTitle': swappedSkillTitle,
+      'createdAt': createdAt.millisecondsSinceEpoch,
+    };
+  }
+
   factory Rating.fromMap(Map<String, dynamic> map) {
+    DateTime ct;
+    final rawCt = map['createdAt'];
+    if (rawCt is int) {
+      ct = DateTime.fromMillisecondsSinceEpoch(rawCt);
+    } else {
+      ct = DateTime.now();
+    }
+
     return Rating(
-      id: map['id'] as String,
-      bookingId: map['bookingId'] as String,
-      fromUserId: map['fromUserId'] as String,
-      toUserId: map['toUserId'] as String,
-      stars: (map['stars'] as int?) ?? 0,
-      review: (map['review'] as String?) ?? '',
-      createdAt:
-          DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
-      skillId: (map['skillId'] as String?) ?? '',
-      skillTitle: (map['skillTitle'] as String?) ?? '',
-      fromUserName: (map['fromUserName'] as String?) ?? '',
+      id: (map['id'] ?? '') as String,
+      bookingId: (map['bookingId'] ?? '') as String,
+      fromUserId: (map['fromUserId'] ?? map['userId'] ?? '') as String,
+      toUserId: (map['toUserId'] ?? map['providerId'] ?? '') as String,
+      stars: (map['stars'] ?? map['rating'] as num?)?.toInt() ?? 5,
+      review: (map['review'] ?? '') as String,
+      createdAt: ct,
+      skillId: (map['skillId'] ?? '') as String,
+      skillTitle: (map['skillTitle'] ?? '') as String,
+      fromUserName: (map['fromUserName'] ?? '') as String,
       fromUserAvatarUrl: map['fromUserAvatarUrl'] as String?,
       swappedSkillTitle: map['swappedSkillTitle'] as String?,
     );
+  }
+
+  factory Rating.fromFirestore(Map<String, dynamic> data, String docId) {
+    return Rating.fromMap({
+      'id': docId,
+      ...data,
+    });
   }
 
   @override

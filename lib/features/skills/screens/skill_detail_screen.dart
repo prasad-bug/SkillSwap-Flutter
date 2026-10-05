@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../../core/utils/image_utils.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/theme/category_theme_extension.dart';
 import '../../../core/widgets/empty_error_states.dart';
@@ -184,7 +184,7 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
       actions: [
         IconButton(
           icon: Icon(Icons.more_vert_rounded, color: cs.onSurface),
-          onPressed: () {},
+          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Coming soon!'))),
         ),
         GestureDetector(
           onTap: () => context.push('/profile'),
@@ -193,10 +193,8 @@ class _SkillDetailScreenState extends ConsumerState<SkillDetailScreen> {
             child: CircleAvatar(
               radius: 16,
               backgroundColor: cs.primaryContainer,
-              backgroundImage: currentUser?.avatarUrl != null
-                  ? CachedNetworkImageProvider(currentUser!.avatarUrl!)
-                  : null,
-              child: currentUser?.avatarUrl == null
+              backgroundImage: safeNetworkImageProvider(currentUser?.avatarUrl),
+              child: safeNetworkImageProvider(currentUser?.avatarUrl) == null
                   ? Text(
                       currentUser?.initials ?? '?',
                       style: TextStyle(
@@ -761,10 +759,8 @@ class _TeacherProfileCard extends ConsumerWidget {
                       child: CircleAvatar(
                         radius: 25,
                         backgroundColor: cs.primaryContainer,
-                        backgroundImage: owner.avatarUrl != null
-                            ? CachedNetworkImageProvider(owner.avatarUrl!)
-                            : null,
-                        child: owner.avatarUrl == null
+                        backgroundImage: safeNetworkImageProvider(owner.avatarUrl),
+                        child: safeNetworkImageProvider(owner.avatarUrl) == null
                             ? Text(
                                 owner.initials,
                                 style: TextStyle(
@@ -1279,7 +1275,7 @@ class _RatingsReviewsCard extends ConsumerWidget {
                   ),
                   const Spacer(),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Coming soon!'))),
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
                       minimumSize: const Size(0, 0),
@@ -1463,10 +1459,8 @@ class _ReviewItemCard extends StatelessWidget {
               CircleAvatar(
                 radius: 16,
                 backgroundColor: cs.primaryContainer,
-                backgroundImage: rating.fromUserAvatarUrl != null
-                    ? CachedNetworkImageProvider(rating.fromUserAvatarUrl!)
-                    : null,
-                child: rating.fromUserAvatarUrl == null
+                backgroundImage: safeNetworkImageProvider(rating.fromUserAvatarUrl),
+                child: safeNetworkImageProvider(rating.fromUserAvatarUrl) == null
                     ? Text(
                         rating.fromUserName.isNotEmpty
                             ? rating.fromUserName[0].toUpperCase()
@@ -1658,6 +1652,8 @@ class _StickyBottomBar extends ConsumerWidget {
                               extra: {
                                 'otherUserName': owner?.name ?? 'Teacher',
                                 'otherUserId': skill.ownerId,
+                                'skillId': skill.id,
+                                'skillTitle': skill.title,
                               },
                             );
                           }

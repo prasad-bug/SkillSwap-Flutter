@@ -9,48 +9,58 @@ import '../../data/mock_data/mock_skill_repository.dart';
 import '../../data/mock_data/mock_chat_repository.dart';
 import '../../data/mock_data/mock_booking_repository.dart';
 import '../../data/mock_data/mock_rating_repository.dart';
+import '../../data/firebase/firebase_user_repository.dart';
+import '../../data/firebase/firebase_skill_repository.dart';
+import '../../data/firebase/firebase_chat_repository.dart';
+import '../../data/firebase/firebase_booking_repository.dart';
+import '../../data/firebase/firebase_rating_repository.dart';
+import '../../data/firebase/firebase_storage_service.dart';
 import '../../core/constants/app_constants.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Repository Providers
-// Switching useMockRepo flag here toggles between Mock and Firebase repos.
+// Automatically connects to Firebase backend when available, or Mock repo.
 // ─────────────────────────────────────────────────────────────────────────────
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
-  if (AppConstants.useMockRepo) {
+  if (AppConstants.useMockRepo || !AppConstants.isFirebaseAvailable) {
     return MockUserRepository();
   }
-  // TODO: return FirebaseUserRepository() when Firebase is configured
-  throw UnimplementedError('Firebase repos not yet connected');
+  return FirebaseUserRepository();
 });
 
 final skillRepositoryProvider = Provider<SkillRepository>((ref) {
-  if (AppConstants.useMockRepo) {
+  if (AppConstants.useMockRepo || !AppConstants.isFirebaseAvailable) {
     final userRepo = ref.watch(userRepositoryProvider);
     return MockSkillRepository(userRepo);
   }
-  throw UnimplementedError('Firebase repos not yet connected');
+  final userRepo = ref.watch(userRepositoryProvider);
+  return FirebaseSkillRepository(userRepo: userRepo);
 });
 
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {
-  if (AppConstants.useMockRepo) {
+  if (AppConstants.useMockRepo || !AppConstants.isFirebaseAvailable) {
     return MockChatRepository();
   }
-  throw UnimplementedError('Firebase repos not yet connected');
+  return FirebaseChatRepository();
 });
 
 final bookingRepositoryProvider = Provider<BookingRepository>((ref) {
-  if (AppConstants.useMockRepo) {
+  if (AppConstants.useMockRepo || !AppConstants.isFirebaseAvailable) {
     return MockBookingRepository();
   }
-  throw UnimplementedError('Firebase repos not yet connected');
+  return FirebaseBookingRepository();
 });
 
 final ratingRepositoryProvider = Provider<RatingRepository>((ref) {
-  if (AppConstants.useMockRepo) {
+  if (AppConstants.useMockRepo || !AppConstants.isFirebaseAvailable) {
     return MockRatingRepository();
   }
-  throw UnimplementedError('Firebase repos not yet connected');
+  return FirebaseRatingRepository();
+});
+
+final firebaseStorageServiceProvider = Provider<FirebaseStorageService>((ref) {
+  return FirebaseStorageService();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

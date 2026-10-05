@@ -9,6 +9,8 @@ import '../mock_data/mock_data.dart';
 class MockSkillRepository implements SkillRepository {
   MockSkillRepository(this._userRepo);
 
+  static List<Skill> get skills => MockData.skills;
+
   final UserRepository _userRepo;
   final List<Skill> _skills = List.from(MockData.skills);
   final _streamController = StreamController<List<Skill>>.broadcast();
@@ -42,6 +44,13 @@ class MockSkillRepository implements SkillRepository {
     }
     _streamController.add(List.from(_skills));
     return skill;
+  }
+
+  @override
+  Future<void> deleteSkill(String skillId) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    _skills.removeWhere((s) => s.id == skillId);
+    _streamController.add(List.from(_skills));
   }
 
   @override

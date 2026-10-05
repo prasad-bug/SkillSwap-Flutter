@@ -83,8 +83,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: AppRoutes.skillListing,
             builder: (ctx, state) {
-              final category =
-                  state.uri.queryParameters['category'];
+              final category = state.uri.queryParameters['category'];
               return SkillListingScreen(initialCategory: category);
             },
             routes: [
@@ -135,8 +134,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                   final extra = state.extra as Map<String, dynamic>?;
                   return ChatScreen(
                     threadId: state.pathParameters['threadId']!,
-                    otherUserName: extra?['otherUserName'] as String? ?? '',
-                    otherUserId: extra?['otherUserId'] as String? ?? '',
+                    otherUserName:
+                        extra?['otherUserName'] as String? ?? 'Maya Lin',
+                    otherUserId: extra?['otherUserId'] as String? ?? 'user_1',
+                    skillId: extra?['skillId'] as String? ?? 'skill-1',
+                    skillTitle: extra?['skillTitle'] as String? ??
+                        'Skill Session',
                   );
                 },
               ),
