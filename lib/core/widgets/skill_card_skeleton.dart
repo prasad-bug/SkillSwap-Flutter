@@ -69,8 +69,7 @@ class _ShimmerBox extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius:
-            BorderRadius.circular(circle ? height / 2 : 4),
+        borderRadius: circle ? null : BorderRadius.circular(4),
         shape: circle ? BoxShape.circle : BoxShape.rectangle,
       ),
     );
