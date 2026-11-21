@@ -93,7 +93,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void _openBookingSheet() {
-    final name = widget.otherUserName.isEmpty ? 'Partner' : widget.otherUserName;
+    final name =
+        widget.otherUserName.isEmpty ? 'Partner' : widget.otherUserName;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -102,8 +103,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         otherUserName: name,
         onPropose: (format, time) {
           Navigator.pop(ctx);
-          _messageController.text =
-              '📅 Proposed a $format session for $time.';
+          _messageController.text = '📅 Proposed a $format session for $time.';
         },
       ),
     );
@@ -367,11 +367,11 @@ class _SubHeaderProfileBar extends StatelessWidget {
               ),
             ],
           ),
-          Row(
+          const Row(
             children: [
-              _CircleBtn(icon: Icons.call_rounded),
-              const SizedBox(width: 4),
-              _CircleBtn(icon: Icons.videocam_rounded),
+              const _CircleBtn(icon: Icons.call_rounded),
+              SizedBox(width: 4),
+              const _CircleBtn(icon: Icons.videocam_rounded),
             ],
           ),
         ],
@@ -742,7 +742,8 @@ class _SmartSuggestionCardState extends State<_SmartSuggestionCard> {
                       onTap: () => setState(() => _selectedDateIndex = index),
                       borderRadius: BorderRadius.circular(12),
                       child: Ink(
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 8),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? cs.primaryFixed
@@ -780,7 +781,8 @@ class _SmartSuggestionCardState extends State<_SmartSuggestionCard> {
                 child: SizedBox(
                   height: 44,
                   child: FilledButton.icon(
-                    onPressed: () => widget.onSendRequest(_dateOptions[_selectedDateIndex]),
+                    onPressed: () =>
+                        widget.onSendRequest(_dateOptions[_selectedDateIndex]),
                     icon: const Icon(Icons.calendar_month_rounded, size: 18),
                     label: const Text('Send Booking Request'),
                   ),
@@ -911,7 +913,6 @@ class _QuickChipsCarousel extends StatelessWidget {
     );
   }
 }
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Input Dock
@@ -1098,7 +1099,8 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
                         color: cs.primaryFixed,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.calendar_today_rounded, color: cs.primary),
+                      child:
+                          Icon(Icons.calendar_today_rounded, color: cs.primary),
                     ),
                     const SizedBox(width: 12),
                     Column(
@@ -1195,9 +1197,8 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
                                 : cs.surfaceContainer,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: isSelected
-                                  ? cs.primary
-                                  : Colors.transparent,
+                              color:
+                                  isSelected ? cs.primary : Colors.transparent,
                               width: 1.5,
                             ),
                           ),
@@ -1210,7 +1211,8 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
                                 children: [
                                   Text(
                                     format['title']!,
-                                    style: theme.textTheme.labelMedium?.copyWith(
+                                    style:
+                                        theme.textTheme.labelMedium?.copyWith(
                                       color: isSelected
                                           ? cs.onPrimaryFixed
                                           : cs.onSurfaceVariant,
@@ -1295,8 +1297,8 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
                                   children: [
                                     Text(
                                       time['title']!,
-                                      style: theme.textTheme.labelLarge
-                                          ?.copyWith(
+                                      style:
+                                          theme.textTheme.labelLarge?.copyWith(
                                         fontWeight: FontWeight.bold,
                                         color: isSelected
                                             ? cs.primary
@@ -1306,7 +1308,8 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
                                     Text(
                                       time['subtitle']!,
                                       style: theme.textTheme.labelSmall
-                                          ?.copyWith(color: cs.onSurfaceVariant),
+                                          ?.copyWith(
+                                              color: cs.onSurfaceVariant),
                                     ),
                                   ],
                                 ),
